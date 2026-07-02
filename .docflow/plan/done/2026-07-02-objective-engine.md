@@ -20,3 +20,6 @@ Owning ADR: `../adr/0003-typed-finite-stage-objectives.md`
 ## Dependencies
 
 - Item 0001 (level config).
+
+---
+Shipped at HEAD `e32d304`.

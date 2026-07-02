@@ -1,7 +1,7 @@
 ---
 adr: 0101
 title: Data-driven level config table
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -96,6 +96,7 @@ no `switch` on level id and no per-level functions.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Resolved accuracy-metric question (sliced ÷ spawned, bombs excluded); status Accepted. |
+| 2026-07-02 | r3 | default-agent | Shipped as levels.h/.c (1ab1422) + gameplay consumption (e32d304); status Implemented. |
 
 ## Approvals
 
