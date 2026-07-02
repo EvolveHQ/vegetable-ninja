@@ -967,6 +967,51 @@ static void DrawMenu(void) {
                      (Color){ 150, 170, 155, 180 });
 #endif
 }
+// world map ---------------------------------------------------------------
+static Vector2 MapNodePos(int index) {
+    const LevelDef *l = Levels_ByIndex(index);
+    int row = (l->stage - 1) / 5, col = (l->stage - 1) % 5;
+    return (Vector2){ GAME_W/2.0f - 2*170 + col*170,
+                      (l->world == 1 ? 250.0f : 600.0f) + row*145 };
+}
+static void DrawMap(void) {
+    DrawTextCentered("CHOOSE YOUR STAGE", GAME_W/2, 40, 60, (Color){ 255, 245, 225, 255 });
+    for (int w = 1; w <= 2; w++) {
+        bool anyUnlocked = false;
+        for (int i = 0; i < Levels_Count(); i++)
+            if (Levels_ByIndex(i)->world == w && Progress_IsUnlocked(Levels_ByIndex(i)->id))
+                anyUnlocked = true;
+        Color wc = anyUnlocked ? (Color){ 170, 230, 120, 255 } : (Color){ 110, 125, 115, 180 };
+        DrawTextCentered(TextFormat("WORLD %d", w), GAME_W/2, w == 1 ? 140 : 495, 40, wc);
+    }
+    for (int i = 0; i < Levels_Count(); i++) {
+        const LevelDef *l = Levels_ByIndex(i);
+        Vector2 p = MapNodePos(i);
+        bool unlocked = Progress_IsUnlocked(l->id);
+        bool boss = (l->stage == 10);
+        bool hover = unlocked && Vector2Distance(gMouse, p) < 54;
+        float r = (boss ? 56 : 48) + (hover ? 5 : 0);
+        Color fill = unlocked ? (hover ? (Color){ 96, 175, 80, 255 } : (Color){ 70, 140, 62, 255 })
+                              : (Color){ 42, 52, 48, 255 };
+        DrawCircleV(p, r + 5, (Color){ 12, 26, 20, 200 });
+        DrawCircleV(p, r, fill);
+        if (boss) DrawRing(p, r + 5, r + 10, 0, 360, 40,
+                           unlocked ? (Color){ 255, 190, 60, 255 } : (Color){ 90, 80, 55, 255 });
+        if (unlocked) {
+            DrawTextCentered(TextFormat("%d", l->stage), p.x, p.y - 26, 46, WHITE);
+        } else {                                       // padlock
+            DrawRectangleRounded((Rectangle){ p.x - 15, p.y - 6, 30, 24 }, 0.3f, 6,
+                                 (Color){ 105, 115, 108, 255 });
+            DrawRing((Vector2){ p.x, p.y - 8 }, 7, 11, 180, 360, 16,
+                     (Color){ 105, 115, 108, 255 });
+        }
+        if (boss) DrawTextCentered("BOSS", p.x, p.y + r + 12, 20,
+                                   (Color){ 255, 190, 60, unlocked ? (unsigned char)255 : (unsigned char)120 });
+        if (hover)
+            DrawTextCentered(l->name, GAME_W/2, 862, 30, (Color){ 220, 240, 220, 255 });
+    }
+}
+
 static void DrawComplete(void) {
     DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 0, 25, 10, 130 });
     DrawTextCentered("STAGE CLEAR!", GAME_W/2, 220, 110, (Color){ 170, 230, 120, 255 });
@@ -1029,25 +1074,36 @@ static void UpdateDrawFrame(void) {
     // ---- state logic
     switch (gState) {
     case ST_MENU:
-        if (gPointerPressed || IsKeyPressed(KEY_SPACE))
-            StartLevel(Levels_ByIndex(0));   // temporary: map lands next
+        if (gPointerPressed || IsKeyPressed(KEY_SPACE)) {
+            gState = ST_MAP; gStateTime = 0;
+        }
 #if !defined(PLATFORM_WEB)
         if (IsKeyPressed(KEY_ESCAPE)) gQuit = true;
 #endif
         break;
     case ST_MAP:
-        break;                               // world map: next work item
+        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MENU; gStateTime = 0; break; }
+        if (gPointerPressed)
+            for (int i = 0; i < Levels_Count(); i++) {
+                const LevelDef *l = Levels_ByIndex(i);
+                if (Progress_IsUnlocked(l->id) &&
+                    Vector2Distance(gMouse, MapNodePos(i)) < 56) {
+                    StartLevel(l);
+                    break;
+                }
+            }
+        break;
     case ST_PLAY:
         if (IsKeyPressed(KEY_P)) gPaused = !gPaused;
-        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MENU; gStateTime = 0; break; }
+        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; break; }
         if (!gPaused) UpdatePlay(dt);
         break;
     case ST_COMPLETE:
     case ST_FAILED:
         if (gStateTime > 0.5f && (gPointerPressed || IsKeyPressed(KEY_SPACE))) {
-            gState = ST_MENU; gStateTime = 0;
+            gState = ST_MAP; gStateTime = 0;
         }
-        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MENU; gStateTime = 0; }
+        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; }
         break;
     }
     if (!gPaused) UpdateCommon(dt);
@@ -1063,7 +1119,7 @@ static void UpdateDrawFrame(void) {
     DrawWorld();
     switch (gState) {
     case ST_MENU:     DrawMenu(); break;
-    case ST_MAP:      break;                 // world map: next work item
+    case ST_MAP:      DrawMap();  break;
     case ST_PLAY:     DrawHud();  break;
     case ST_COMPLETE: DrawHud(); DrawComplete(); break;
     case ST_FAILED:   DrawHud(); DrawFailed();   break;
@@ -1093,6 +1149,8 @@ static void UpdateDrawFrame(void) {
 
     if (gSelfTest) {
         if (gSelfFrame == 50) TakeScreenshot("selftest_menu.png");
+        if (gSelfFrame == 52) { gState = ST_MAP; gStateTime = 0; }
+        if (gSelfFrame == 58) TakeScreenshot("selftest_map.png");
         if (gSelfFrame == 60) StartLevel(Levels_ByIndex(0));
         if (gSelfFrame == 100 || gSelfFrame == 150) SpawnWave();
         if (gSelfFrame == 260) TakeScreenshot("selftest.png");
