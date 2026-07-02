@@ -569,6 +569,7 @@ static void DecideOutcome(bool success) {
         float metric = (gLevel->starMetric == METRIC_SCORE) ? (float)gScore : gAccuracy;
         gStarsEarned = 1 + (metric >= gLevel->star2) + (metric >= gLevel->star3);
         Progress_CompleteLevel(gLevel->id, gStarsEarned);
+        if (gAudioOk) PlaySound(gSndCombo);           // little fanfare
     }
 }
 
@@ -967,6 +968,45 @@ static void DrawMenu(void) {
                      (Color){ 150, 170, 155, 180 });
 #endif
 }
+// ui helpers ----------------------------------------------------------------
+static void DrawStarShape(Vector2 c, float r, Color col) {
+    Vector2 pts[12];
+    pts[0] = c;
+    for (int i = 0; i <= 10; i++) {
+        float a = -PI/2 - i * PI/5;      // counter-clockwise so quads face front
+        float rr = (i % 2 == 0) ? r : r * 0.45f;
+        pts[i + 1] = (Vector2){ c.x + cosf(a)*rr, c.y + sinf(a)*rr };
+    }
+    DrawTriangleFan(pts, 12, col);
+}
+static void DrawStarRow(Vector2 c, float r, float gap, int earned, float t) {
+    for (int i = 0; i < 3; i++) {
+        Vector2 p = { c.x + (i - 1) * gap, c.y };
+        DrawStarShape((Vector2){ p.x + r*0.06f, p.y + r*0.08f }, r,
+                      (Color){ 0, 0, 0, 90 });                       // shadow
+        if (i < earned) {
+            float pop = Clamp((t - 0.25f - i * 0.3f) * 4.0f, 0, 1);  // pop-in
+            if (pop > 0)
+                DrawStarShape(p, r * (0.6f + 0.4f * pop), (Color){ 255, 200, 60, 255 });
+            else
+                DrawStarShape(p, r, (Color){ 55, 65, 58, 255 });
+        } else DrawStarShape(p, r, (Color){ 55, 65, 58, 255 });
+    }
+}
+static Rectangle BtnRect(float cx) { return (Rectangle){ cx - 115, 640, 230, 74 }; }
+static void DrawButton(Rectangle r, const char *label, bool enabled) {
+    bool hover = enabled && CheckCollisionPointRec(gMouse, r);
+    Color fill = !enabled ? (Color){ 38, 48, 44, 200 }
+               : hover    ? (Color){ 96, 175, 80, 255 }
+                          : (Color){ 56, 110, 60, 255 };
+    DrawRectangleRounded(r, 0.35f, 8, (Color){ 10, 24, 18, 200 });
+    DrawRectangleRounded((Rectangle){ r.x + 3, r.y + 3, r.width - 6, r.height - 6 },
+                         0.35f, 8, fill);
+    Vector2 m = MeasureTextEx(gFont, label, 36, 2);
+    DrawTextShadow(label, r.x + (r.width - m.x)/2, r.y + (r.height - m.y)/2, 36,
+                   enabled ? WHITE : (Color){ 130, 140, 132, 200 });
+}
+
 // world map ---------------------------------------------------------------
 static Vector2 MapNodePos(int index) {
     const LevelDef *l = Levels_ByIndex(index);
@@ -1005,28 +1045,51 @@ static void DrawMap(void) {
             DrawRing((Vector2){ p.x, p.y - 8 }, 7, 11, 180, 360, 16,
                      (Color){ 105, 115, 108, 255 });
         }
-        if (boss) DrawTextCentered("BOSS", p.x, p.y + r + 12, 20,
+        if (boss) DrawTextCentered("BOSS", p.x, p.y - r - 32, 20,
                                    (Color){ 255, 190, 60, unlocked ? (unsigned char)255 : (unsigned char)120 });
+        int best = Progress_BestStars(l->id);
+        if (best > 0)                                    // best stars, monotonic
+            for (int s = 0; s < 3; s++)
+                DrawStarShape((Vector2){ p.x + (s - 1) * 26.0f, p.y + r + 20 }, 11,
+                              s < best ? (Color){ 255, 200, 60, 255 }
+                                       : (Color){ 50, 60, 54, 255 });
         if (hover)
             DrawTextCentered(l->name, GAME_W/2, 862, 30, (Color){ 220, 240, 220, 255 });
     }
 }
 
+static const LevelDef *NextLevel(void) {
+    return Levels_ByIndex(Levels_IndexOfId(gLevel->id) + 1);
+}
 static void DrawComplete(void) {
-    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 0, 25, 10, 130 });
-    DrawTextCentered("STAGE CLEAR!", GAME_W/2, 220, 110, (Color){ 170, 230, 120, 255 });
-    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 420, 60, WHITE);
-    if (gStateTime > 0.5f)
-        DrawTextCentered("CLICK to continue", GAME_W/2, 640, 34,
+    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 0, 25, 10, 150 });
+    DrawTextCentered(TextFormat("%d-%d  %s", gLevel->world, gLevel->stage, gLevel->name),
+                     GAME_W/2, 110, 28, (Color){ 190, 215, 195, 220 });
+    DrawTextCentered("STAGE CLEAR!", GAME_W/2, 150, 100, (Color){ 170, 230, 120, 255 });
+    DrawStarRow((Vector2){ GAME_W/2, 350 }, 56, 140, gStarsEarned, gStateTime);
+    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 445, 56, WHITE);
+    DrawTextCentered(TextFormat("accuracy  %d%%", (int)(gAccuracy * 100)),
+                     GAME_W/2, 525, 30, (Color){ 200, 220, 200, 220 });
+    const LevelDef *next = NextLevel();
+    if (next) {
+        DrawButton(BtnRect(GAME_W/2 - 300), "RETRY", true);
+        DrawButton(BtnRect(GAME_W/2),       "NEXT",  Progress_IsUnlocked(next->id));
+        DrawButton(BtnRect(GAME_W/2 + 300), "MAP",   true);
+    } else {
+        DrawButton(BtnRect(GAME_W/2 - 160), "RETRY", true);
+        DrawButton(BtnRect(GAME_W/2 + 160), "MAP",   true);
+        DrawTextCentered("all stages complete - what a harvest!", GAME_W/2, 760, 30,
                          (Color){ 255, 210, 90, 255 });
+    }
 }
 static void DrawFailed(void) {
-    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 25, 0, 0, 130 });
-    DrawTextCentered("STAGE FAILED", GAME_W/2, 220, 110, (Color){ 255, 90, 70, 255 });
-    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 420, 60, WHITE);
-    if (gStateTime > 0.5f)
-        DrawTextCentered("CLICK to continue", GAME_W/2, 640, 34,
-                         (Color){ 255, 210, 90, 255 });
+    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 25, 0, 0, 150 });
+    DrawTextCentered(TextFormat("%d-%d  %s", gLevel->world, gLevel->stage, gLevel->name),
+                     GAME_W/2, 130, 28, (Color){ 215, 195, 190, 220 });
+    DrawTextCentered("STAGE FAILED", GAME_W/2, 180, 100, (Color){ 255, 90, 70, 255 });
+    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 420, 56, WHITE);
+    DrawButton(BtnRect(GAME_W/2 - 160), "RETRY", true);
+    DrawButton(BtnRect(GAME_W/2 + 160), "MAP", true);
 }
 
 // =============================================================== frame loop
@@ -1099,9 +1162,34 @@ static void UpdateDrawFrame(void) {
         if (!gPaused) UpdatePlay(dt);
         break;
     case ST_COMPLETE:
+        if (gStateTime > 0.4f && gPointerPressed) {
+            const LevelDef *next = NextLevel();
+            if (next) {
+                if      (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 - 300)))
+                    StartLevel(gLevel);
+                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2)) &&
+                         Progress_IsUnlocked(next->id))
+                    StartLevel(next);
+                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 300))) {
+                    gState = ST_MAP; gStateTime = 0;
+                }
+            } else {
+                if      (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 - 160)))
+                    StartLevel(gLevel);
+                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160))) {
+                    gState = ST_MAP; gStateTime = 0;
+                }
+            }
+        }
+        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; }
+        break;
     case ST_FAILED:
-        if (gStateTime > 0.5f && (gPointerPressed || IsKeyPressed(KEY_SPACE))) {
-            gState = ST_MAP; gStateTime = 0;
+        if (gStateTime > 0.4f && gPointerPressed) {
+            if      (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 - 160)))
+                StartLevel(gLevel);
+            else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160))) {
+                gState = ST_MAP; gStateTime = 0;
+            }
         }
         if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; }
         break;
@@ -1153,8 +1241,13 @@ static void UpdateDrawFrame(void) {
         if (gSelfFrame == 58) TakeScreenshot("selftest_map.png");
         if (gSelfFrame == 60) StartLevel(Levels_ByIndex(0));
         if (gSelfFrame == 100 || gSelfFrame == 150) SpawnWave();
-        if (gSelfFrame == 260) TakeScreenshot("selftest.png");
-        if (gSelfFrame >= 270) gQuit = true;
+        if (gSelfFrame == 190) TakeScreenshot("selftest.png");
+        if (gSelfFrame == 200 && gState == ST_PLAY) {
+            DecideOutcome(true);
+            gOutcomeTimer = 0.02f;   // self-test runs uncapped; skip the pause
+        }
+        if (gSelfFrame == 380) TakeScreenshot("selftest_complete.png");
+        if (gSelfFrame >= 390) gQuit = true;
     }
 }
 
@@ -1165,7 +1258,7 @@ int main(int argc, char **argv) {
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(GAME_W, GAME_H, "Vegetable Ninja");
     SetExitKey(KEY_NULL);
-    SetTargetFPS(gSelfTest ? 1000 : 240);
+    SetTargetFPS(240);
 
     gFont = LoadFontFromMemory(".ttf", FONT_TTF, FONT_TTF_LEN, 160, NULL, 0);
     SetTextureFilter(gFont.texture, TEXTURE_FILTER_BILINEAR);
