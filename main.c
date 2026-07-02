@@ -24,6 +24,8 @@
 #endif
 
 #include "font_data.h"
+#include "levels.h"
+#include "progress.h"
 
 // ----------------------------------------------------------- configuration
 #define GAME_W        1600            // design-space resolution (all logic)
@@ -46,7 +48,7 @@
 typedef enum { VEG_CARROT, VEG_TOMATO, VEG_BROCCOLI, VEG_EGGPLANT,
                VEG_CORN, VEG_PUMPKIN, VEG_ONION, VEG_CUCUMBER, VEG_COUNT } VegType;
 
-typedef enum { ST_MENU, ST_PLAY, ST_OVER } GameState;
+typedef enum { ST_MENU, ST_MAP, ST_PLAY, ST_COMPLETE, ST_FAILED } GameState;
 
 typedef struct { bool active, isBomb; VegType type;
                  Vector2 pos, vel; float rot, rotVel, radius; } Veg;
@@ -91,7 +93,16 @@ static Particle gMotes[MAX_MOTES];
 
 static GameState gState = ST_MENU;
 static int   gScore, gLives;
-static float gPlayTime, gSpawnTimer, gShake, gAberr, gFlash;
+static float gSpawnTimer, gShake, gAberr, gFlash;
+
+// active stage state (all objective logic reads gLevel — never a level id)
+static const LevelDef *gLevel = NULL;
+static float gStageTime;
+static int   gSliced, gSpawnedVeg, gMaxCombo;
+static int   gOutcome;              // 0 = playing, 1 = success, 2 = failed
+static float gOutcomeTimer;         // lets effects breathe before the screen switch
+static int   gStarsEarned;
+static float gAccuracy;
 static int   gComboCount;  static float gComboTimer; static Vector2 gComboPos;
 static bool  gPaused = false, gShowFps = false;
 static float gStateTime = 0;          // time since entering current state
@@ -528,7 +539,10 @@ static void SpawnSplat(Vector2 pos, Color c) {
 }
 static void LaunchOne(bool bomb) {
     for (int i = 0; i < MAX_VEG; i++) if (!gVeg[i].active) {
-        VegType t = (VegType)GetRandomValue(0, VEG_COUNT - 1);
+        VegType t;
+        do { t = (VegType)GetRandomValue(0, VEG_COUNT - 1); }
+        while (!(gLevel->vegMask & (1u << t)));
+        if (!bomb) gSpawnedVeg++;
         float x = frand(GAME_W * 0.15f, GAME_W * 0.85f);
         float vx = (GAME_W/2 - x) * frand(0.15f, 0.55f) + frand(-60, 60);
         float vy = -frand(1050, 1380);
@@ -540,19 +554,29 @@ static void LaunchOne(bool bomb) {
     }
 }
 static void SpawnWave(void) {
-    int count = 1 + GetRandomValue(0, (int)fminf(3, 1 + gPlayTime / 18.0f));
-    float bombChance = fminf(0.18f, 0.05f + gPlayTime * 0.0018f);
+    int count = 1 + GetRandomValue(0, gLevel->maxWave - 1);
     for (int i = 0; i < count; i++)
-        LaunchOne(gPlayTime > 8 && frand(0, 1) < bombChance);
+        LaunchOne(frand(0, 1) < gLevel->bombChance);
 }
 
 // ============================================================== game events
+static void DecideOutcome(bool success) {
+    if (gOutcome) return;                 // first decision wins
+    gOutcome = success ? 1 : 2;
+    gOutcomeTimer = 1.0f;
+    if (success) {
+        gAccuracy = gSpawnedVeg > 0 ? (float)gSliced / (float)gSpawnedVeg : 1.0f;
+        float metric = (gLevel->starMetric == METRIC_SCORE) ? (float)gScore : gAccuracy;
+        gStarsEarned = 1 + (metric >= gLevel->star2) + (metric >= gLevel->star3);
+        Progress_CompleteLevel(gLevel->id, gStarsEarned);
+    }
+}
+
 static void LoseLife(void) {
+    if (gOutcome) return;                 // outcome already decided
     gLives--;
     if (gAudioOk) PlaySound(gSndThud);
-    if (gLives <= 0) {
-        gState = ST_OVER; gStateTime = 0;
-    }
+    if (gLives <= 0) DecideOutcome(false);
 }
 
 static void SliceVeg(int vi, Vector2 bladeDir) {
@@ -593,7 +617,9 @@ static void SliceVeg(int vi, Vector2 bladeDir) {
     SpawnPopup(v->pos, "+10", 34, (Color){ 255, 255, 255, 255 });
     PlaySplat(); PlaySlice();
 
+    gSliced++;
     gComboCount++;
+    if (gComboCount > gMaxCombo) gMaxCombo = gComboCount;
     gComboTimer = 0.42f;
     gComboPos = v->pos;
     gShake = fmaxf(gShake, 0.12f);
@@ -629,23 +655,30 @@ static void ExplodeBomb(Vector2 pos) {
     LoseLife();
 }
 
-static void ResetGame(void) {
+static void StartLevel(const LevelDef *lvl) {
     memset(gVeg, 0, sizeof(gVeg));   memset(gHalf, 0, sizeof(gHalf));
     memset(gPart, 0, sizeof(gPart)); memset(gSplat, 0, sizeof(gSplat));
     memset(gPopup, 0, sizeof(gPopup));
     gTrailLen = 0;
-    gScore = 0; gLives = 3; gPlayTime = 0; gSpawnTimer = 0.8f;
+    gLevel = lvl;
+    gScore = 0; gLives = lvl->lives; gSpawnTimer = 0.8f;
+    gStageTime = 0; gSliced = 0; gSpawnedVeg = 0; gMaxCombo = 0;
+    gOutcome = 0; gOutcomeTimer = 0; gStarsEarned = 0; gAccuracy = 0;
     gComboCount = 0; gComboTimer = 0;
     gShake = gAberr = gFlash = 0;
     gPaused = false;
+    gState = ST_PLAY; gStateTime = 0;
 }
 
 // ================================================================== update
 static void UpdatePlay(float dt) {
-    gPlayTime += dt;
-    gSpawnTimer -= dt;
-    float interval = fmaxf(0.55f, 1.55f - gPlayTime * 0.016f);
-    if (gSpawnTimer <= 0) { SpawnWave(); gSpawnTimer = interval * frand(0.8f, 1.2f); }
+    gStageTime += dt;
+    if (!gOutcome) {                                  // stop spawning once decided
+        gSpawnTimer -= dt;
+        float k = Clamp(gStageTime / gLevel->timeLimit, 0, 1);
+        float interval = gLevel->spawnInterval * Lerp(1.0f, gLevel->spawnRamp, k);
+        if (gSpawnTimer <= 0) { SpawnWave(); gSpawnTimer = interval * frand(0.8f, 1.2f); }
+    }
 
     // ---- blade slicing
     Vector2 bladeVec = Vector2Subtract(gMouse, gMousePrev);
@@ -671,8 +704,11 @@ static void UpdatePlay(float dt) {
                           (Color){ 255, 220, 90, 255 }, true, 1.0f);
         }
         if (cutting && PointSegDist(v->pos, gMousePrev, gMouse) < v->radius) {
-            if (v->isBomb) { v->active = false; ExplodeBomb(v->pos); }
-            else SliceVeg(i, bladeDir);
+            if (v->isBomb) {
+                v->active = false;
+                ExplodeBomb(v->pos);
+                if (gLevel->objective == OBJ_NO_BOMB) DecideOutcome(false);
+            } else SliceVeg(i, bladeDir);
             continue;
         }
         if (v->pos.y > GAME_H + 140 && v->vel.y > 0) {    // fell off screen
@@ -698,6 +734,29 @@ static void UpdatePlay(float dt) {
                 gShake = fmaxf(gShake, 0.3f);
             }
             gComboCount = 0;
+        }
+    }
+
+    // ---- objective evaluation (generic over the LevelDef)
+    if (!gOutcome) {
+        switch (gLevel->objective) {
+        case OBJ_SLICE_COUNT:  if (gSliced   >= gLevel->objTarget) DecideOutcome(true); break;
+        case OBJ_SCORE_TARGET: if (gScore    >= gLevel->objTarget) DecideOutcome(true); break;
+        case OBJ_COMBO:        if (gMaxCombo >= gLevel->objTarget) DecideOutcome(true); break;
+        case OBJ_SURVIVE_TIME:
+        case OBJ_NO_BOMB:      break;     // decided by the clock below
+        }
+        if (!gOutcome && gStageTime >= gLevel->timeLimit) {
+            bool timeIsGoal = (gLevel->objective == OBJ_SURVIVE_TIME ||
+                               gLevel->objective == OBJ_NO_BOMB);
+            DecideOutcome(timeIsGoal);
+        }
+    }
+    if (gOutcome) {                                   // brief pause, then screen
+        gOutcomeTimer -= dt;
+        if (gOutcomeTimer <= 0) {
+            gState = (gOutcome == 1) ? ST_COMPLETE : ST_FAILED;
+            gStateTime = 0;
         }
     }
 }
@@ -843,10 +902,27 @@ static void DrawWorld(void) {
 static void DrawHud(void) {
     DrawTextShadow(TextFormat("%d", gScore), 34, 18, 72, (Color){ 255, 240, 200, 255 });
     DrawTextShadow("SCORE", 36, 88, 24, (Color){ 190, 210, 190, 200 });
-    for (int i = 0; i < 3; i++) {                         // tomato lives
+    for (int i = 0; i < gLevel->lives; i++) {             // tomato lives
         Vector2 p = { GAME_W - 60.0f - i * 66, 52 };
         Color tint = i < gLives ? WHITE : (Color){ 70, 70, 70, 160 };
         DrawVegSprite(VEG_TOMATO, p, 0, 24, tint);
+    }
+    if (gState == ST_PLAY) {                              // objective + clock
+        int rem = (int)ceilf(fmaxf(0, gLevel->timeLimit - gStageTime));
+        DrawTextCentered(TextFormat("%d-%d  %s", gLevel->world, gLevel->stage,
+                         gLevel->name), GAME_W/2, 14, 24, (Color){ 180, 205, 185, 210 });
+        const char *obj = "";
+        switch (gLevel->objective) {
+        case OBJ_SLICE_COUNT:  obj = TextFormat("SLICE  %d / %d", gSliced, gLevel->objTarget); break;
+        case OBJ_SURVIVE_TIME: obj = "SURVIVE!"; break;
+        case OBJ_SCORE_TARGET: obj = TextFormat("SCORE  %d / %d", gScore, gLevel->objTarget); break;
+        case OBJ_NO_BOMB:      obj = "DON'T SLICE A BOMB!"; break;
+        case OBJ_COMBO:        obj = TextFormat("LAND A COMBO x%d   best x%d",
+                                                gLevel->objTarget, gMaxCombo); break;
+        }
+        DrawTextCentered(obj, GAME_W/2, 44, 38, (Color){ 255, 250, 235, 255 });
+        Color clock = rem <= 5 ? (Color){ 255, 90, 70, 255 } : (Color){ 200, 220, 200, 230 };
+        DrawTextCentered(TextFormat("%d:%02d", rem/60, rem%60), GAME_W/2, 92, 32, clock);
     }
     for (int i = 0; i < MAX_POPUP; i++) if (gPopup[i].active) {
         Popup *p = &gPopup[i];
@@ -891,12 +967,20 @@ static void DrawMenu(void) {
                      (Color){ 150, 170, 155, 180 });
 #endif
 }
-static void DrawOver(void) {
-    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 20, 0, 0, 120 });
-    DrawTextCentered("GAME OVER", GAME_W/2, 200, 130, (Color){ 255, 90, 70, 255 });
-    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 400, 70, WHITE);
-    if (gStateTime > 0.7f)
-        DrawTextCentered("CLICK to play again    ESC for menu", GAME_W/2, 640, 34,
+static void DrawComplete(void) {
+    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 0, 25, 10, 130 });
+    DrawTextCentered("STAGE CLEAR!", GAME_W/2, 220, 110, (Color){ 170, 230, 120, 255 });
+    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 420, 60, WHITE);
+    if (gStateTime > 0.5f)
+        DrawTextCentered("CLICK to continue", GAME_W/2, 640, 34,
+                         (Color){ 255, 210, 90, 255 });
+}
+static void DrawFailed(void) {
+    DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 25, 0, 0, 130 });
+    DrawTextCentered("STAGE FAILED", GAME_W/2, 220, 110, (Color){ 255, 90, 70, 255 });
+    DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 420, 60, WHITE);
+    if (gStateTime > 0.5f)
+        DrawTextCentered("CLICK to continue", GAME_W/2, 640, 34,
                          (Color){ 255, 210, 90, 255 });
 }
 
@@ -945,22 +1029,23 @@ static void UpdateDrawFrame(void) {
     // ---- state logic
     switch (gState) {
     case ST_MENU:
-        if (gPointerPressed || IsKeyPressed(KEY_SPACE)) {
-            ResetGame(); gState = ST_PLAY; gStateTime = 0;
-        }
+        if (gPointerPressed || IsKeyPressed(KEY_SPACE))
+            StartLevel(Levels_ByIndex(0));   // temporary: map lands next
 #if !defined(PLATFORM_WEB)
         if (IsKeyPressed(KEY_ESCAPE)) gQuit = true;
 #endif
         break;
+    case ST_MAP:
+        break;                               // world map: next work item
     case ST_PLAY:
         if (IsKeyPressed(KEY_P)) gPaused = !gPaused;
         if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MENU; gStateTime = 0; break; }
         if (!gPaused) UpdatePlay(dt);
         break;
-    case ST_OVER:
-        if (gStateTime > 0.7f &&
-            (gPointerPressed || IsKeyPressed(KEY_SPACE))) {
-            ResetGame(); gState = ST_PLAY; gStateTime = 0;
+    case ST_COMPLETE:
+    case ST_FAILED:
+        if (gStateTime > 0.5f && (gPointerPressed || IsKeyPressed(KEY_SPACE))) {
+            gState = ST_MENU; gStateTime = 0;
         }
         if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MENU; gStateTime = 0; }
         break;
@@ -977,9 +1062,11 @@ static void UpdateDrawFrame(void) {
     BeginMode2D(cam);
     DrawWorld();
     switch (gState) {
-    case ST_MENU: DrawMenu(); break;
-    case ST_PLAY: DrawHud();  break;
-    case ST_OVER: DrawHud(); DrawOver(); break;
+    case ST_MENU:     DrawMenu(); break;
+    case ST_MAP:      break;                 // world map: next work item
+    case ST_PLAY:     DrawHud();  break;
+    case ST_COMPLETE: DrawHud(); DrawComplete(); break;
+    case ST_FAILED:   DrawHud(); DrawFailed();   break;
     }
     EndMode2D();
     EndTextureMode();
@@ -1006,7 +1093,7 @@ static void UpdateDrawFrame(void) {
 
     if (gSelfTest) {
         if (gSelfFrame == 50) TakeScreenshot("selftest_menu.png");
-        if (gSelfFrame == 60) { ResetGame(); gState = ST_PLAY; }
+        if (gSelfFrame == 60) StartLevel(Levels_ByIndex(0));
         if (gSelfFrame == 100 || gSelfFrame == 150) SpawnWave();
         if (gSelfFrame == 260) TakeScreenshot("selftest.png");
         if (gSelfFrame >= 270) gQuit = true;
