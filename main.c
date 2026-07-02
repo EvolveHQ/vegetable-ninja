@@ -90,11 +90,10 @@ static int      gTrailLen = 0;
 static Particle gMotes[MAX_MOTES];
 
 static GameState gState = ST_MENU;
-static int   gScore, gHiScore, gLives;
+static int   gScore, gLives;
 static float gPlayTime, gSpawnTimer, gShake, gAberr, gFlash;
 static int   gComboCount;  static float gComboTimer; static Vector2 gComboPos;
 static bool  gPaused = false, gShowFps = false;
-static bool  gNewBest = false;
 static float gStateTime = 0;          // time since entering current state
 
 static Vector2 gMouse, gMousePrev;    // design-space blade position
@@ -213,28 +212,6 @@ static const char *BG_FS =
 #endif // PLATFORM_WEB
 
 // ------------------------------------------------------------------ helpers
-#if defined(PLATFORM_WEB)
-static int LoadHiScore(void) {
-    return EM_ASM_INT({
-        return parseInt(localStorage.getItem('vegninja_hiscore') || '0') | 0;
-    });
-}
-static void SaveHiScore(int v) {
-    EM_ASM({ localStorage.setItem('vegninja_hiscore', $0); }, v);
-}
-#else
-static int LoadHiScore(void) {
-    int v = 0;
-    FILE *f = fopen("vegninja_hiscore.txt", "r");
-    if (f) { if (fscanf(f, "%d", &v) != 1) v = 0; fclose(f); }
-    return v;
-}
-static void SaveHiScore(int v) {
-    FILE *f = fopen("vegninja_hiscore.txt", "w");
-    if (f) { fprintf(f, "%d", v); fclose(f); }
-}
-#endif
-
 static float frand(float a, float b) {
     return a + (b - a) * ((float)GetRandomValue(0, 100000) / 100000.0f);
 }
@@ -575,11 +552,6 @@ static void LoseLife(void) {
     if (gAudioOk) PlaySound(gSndThud);
     if (gLives <= 0) {
         gState = ST_OVER; gStateTime = 0;
-        gNewBest = gScore > gHiScore;
-        if (gNewBest) {
-            gHiScore = gScore;
-            SaveHiScore(gHiScore);
-        }
     }
 }
 
@@ -876,9 +848,6 @@ static void DrawHud(void) {
         Color tint = i < gLives ? WHITE : (Color){ 70, 70, 70, 160 };
         DrawVegSprite(VEG_TOMATO, p, 0, 24, tint);
     }
-    if (gHiScore > 0)
-        DrawTextShadow(TextFormat("BEST %d", gHiScore), 34, 120, 24,
-                       (Color){ 255, 210, 90, 200 });
     for (int i = 0; i < MAX_POPUP; i++) if (gPopup[i].active) {
         Popup *p = &gPopup[i];
         Color c = p->color;
@@ -914,9 +883,6 @@ static void DrawMenu(void) {
                      (Color){ 255, 120, 100, 220 });
     DrawTextCentered("CLICK or press SPACE to play", GAME_W/2, 660, 36,
                      (Color){ 255, 210, 90, 255 });
-    if (gHiScore > 0)
-        DrawTextCentered(TextFormat("best score  %d", gHiScore), GAME_W/2, 730, 30,
-                         (Color){ 200, 220, 200, 220 });
 #if defined(PLATFORM_WEB)
     DrawTextCentered("P pause   F fps", GAME_W/2, 840, 22,
                      (Color){ 150, 170, 155, 180 });
@@ -929,12 +895,6 @@ static void DrawOver(void) {
     DrawRectangle(0, 0, GAME_W, GAME_H, (Color){ 20, 0, 0, 120 });
     DrawTextCentered("GAME OVER", GAME_W/2, 200, 130, (Color){ 255, 90, 70, 255 });
     DrawTextCentered(TextFormat("score  %d", gScore), GAME_W/2, 400, 70, WHITE);
-    if (gNewBest)
-        DrawTextCentered("NEW BEST!", GAME_W/2, 500,
-                         48, (Color){ 255, 220, 80, (unsigned char)(155 + 100*sinf((float)GetTime()*6)) });
-    else
-        DrawTextCentered(TextFormat("best  %d", gHiScore), GAME_W/2, 505, 36,
-                         (Color){ 220, 220, 200, 220 });
     if (gStateTime > 0.7f)
         DrawTextCentered("CLICK to play again    ESC for menu", GAME_W/2, 640, 34,
                          (Color){ 255, 210, 90, 255 });
@@ -1084,7 +1044,6 @@ int main(int argc, char **argv) {
         SetWindowIcon(icon);
         UnloadImage(icon);
     }
-    gHiScore = LoadHiScore();
 #if defined(PLATFORM_WEB)
     // open index.html?debug to show the fps counter + mouse-mapping marker
     gShowFps = EM_ASM_INT({ return location.search.indexOf('debug') >= 0 ? 1 : 0; });

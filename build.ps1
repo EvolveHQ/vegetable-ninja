@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 
 if ($Target -eq "native" -or $Target -eq "all") {
     $rl = ".\vendor\raylib-5.5_win64_mingw-w64"
-    gcc main.c -o VegetableNinja.exe -O2 -Wall -Wextra `
+    gcc main.c levels.c progress.c -o VegetableNinja.exe -O2 -Wall -Wextra `
         "-I$rl\include" "-L$rl\lib" `
         -lraylib -lopengl32 -lgdi32 -lwinmm -mwindows -static
     if ($LASTEXITCODE -ne 0) { exit 1 }
@@ -22,7 +22,7 @@ if ($Target -eq "web" -or $Target -eq "all") {
     # glue is incompatible with the current emscripten runtime.
     $rl = ".\vendor\raylib-src\raylib-5.5\src"
     New-Item -ItemType Directory -Force web | Out-Null
-    emcc main.c -o web\index.html -O2 -DPLATFORM_WEB `
+    emcc main.c levels.c progress.c -o web\index.html -O2 -DPLATFORM_WEB `
         "-I$rl" "$rl\libraylib.web.a" `
         -sUSE_GLFW=3 -sINITIAL_MEMORY=134217728 `
         "-sEXPORTED_RUNTIME_METHODS=HEAPF32,HEAP32,HEAPU8" `
