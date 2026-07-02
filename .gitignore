@@ -3,6 +3,7 @@ vendor/
 
 # build outputs
 web/
+dist/
 VegetableNinja.exe
 
 # runtime / test artifacts

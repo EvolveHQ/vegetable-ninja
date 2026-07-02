@@ -25,6 +25,10 @@ run: build
 selftest: build
     Start-Process ./VegetableNinja.exe -ArgumentList '--selftest' -Wait; Get-ChildItem selftest*.png | Select-Object Name
 
+# assemble the deployable static site (for https://vegetable.ninja) into dist/
+dist: web
+    Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory dist | Out-Null; Copy-Item web\* dist\; Copy-Item favicon.svg dist\; Set-Content dist\CNAME 'vegetable.ninja' -NoNewline; Get-ChildItem dist | Select-Object Name, Length
+
 # serve web/ at http://localhost:8377 in the background (survives shell exit)
 up:
     just down; $p = Start-Process python -ArgumentList '-m','http.server','8377','--directory','web' -WindowStyle Hidden -PassThru; $p.Id | Out-File .server.pid; Write-Host "serving http://localhost:8377 (pid $($p.Id))"
