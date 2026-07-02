@@ -91,3 +91,9 @@ screenshots (used to verify the build).
 
 Font: [Luckiest Guy](https://fonts.google.com/specimen/Luckiest+Guy)
 (Apache 2.0), embedded in `font_data.h`.
+
+## License
+
+[MIT](LICENSE). Third-party components keep their own licenses:
+raylib (zlib, fetched into `vendor/`), Luckiest Guy font (Apache 2.0,
+embedded), Emscripten SDK (MIT/NCSA, fetched into `vendor/`).
