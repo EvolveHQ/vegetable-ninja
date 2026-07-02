@@ -1,7 +1,7 @@
 ---
 adr: 0003
 title: Typed finite stage objectives
-status: Proposed
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -74,8 +74,10 @@ come from the level config; gameplay code contains no per-level logic.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
+| 2026-07-02 | r2 | default-agent | Status Accepted (no open questions). |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Maintainer | Eugenio Minardi | 2026-07-02 | — |

@@ -1,7 +1,7 @@
 ---
 adr: 0002
 title: Saga progression structure
-status: Proposed
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -25,7 +25,9 @@ what changes is how a play session is entered, scoped, and exited.
 The game is structured as worlds containing stages — initially 2 worlds
 of 10 stages each — presented on a world map screen. Stages unlock
 linearly and failure is penalty-free: any unlocked stage can be
-retried freely, and failing never re-locks anything.
+retried freely, and failing never re-locks anything. The endless mode
+is removed: the saga replaces it, and the entry flow goes directly from
+the title screen to the world map.
 
 ## User stories / scenarios
 
@@ -50,6 +52,8 @@ retried freely, and failing never re-locks anything.
    (Retry / Map buttons) on failure.
 7. Failing a stage changes no unlock state; the failed stage can be
    retried immediately and indefinitely.
+8. The endless mode is not reachable from any screen; the title screen
+   leads to the world map.
 
 ## Out of scope
 
@@ -60,8 +64,7 @@ retried freely, and failing never re-locks anything.
 
 ## Open questions
 
-- Fate of the existing endless mode: removed entirely, or kept as a
-  bonus mode reachable from the menu/map?
+- None. (Resolved 2026-07-02: the endless mode is removed entirely.)
 
 ## References / cross-links
 
@@ -74,8 +77,10 @@ retried freely, and failing never re-locks anything.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
+| 2026-07-02 | r2 | default-agent | Resolved endless-mode question (removed); added AC 8; status Accepted. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Maintainer | Eugenio Minardi | 2026-07-02 | — |

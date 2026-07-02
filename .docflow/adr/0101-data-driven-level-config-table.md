@@ -1,7 +1,7 @@
 ---
 adr: 0101
 title: Data-driven level config table
-status: Proposed
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -79,9 +79,9 @@ no `switch` on level id and no per-level functions.
 
 ## Open questions
 
-- The "accuracy" star metric definition (shared with
-  `adr/0004-star-ratings.md`): proposed sliced ÷ spawned; confirm
-  before acceptance so the schema can name its metrics.
+- None. (Resolved 2026-07-02: accuracy = vegetables sliced ÷ vegetables
+  spawned, bombs excluded — per `adr/0004-star-ratings.md`; the schema
+  names `score` and `accuracy` as gradable star metrics.)
 
 ## References
 
@@ -95,8 +95,10 @@ no `switch` on level id and no per-level functions.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
+| 2026-07-02 | r2 | default-agent | Resolved accuracy-metric question (sliced ÷ spawned, bombs excluded); status Accepted. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Maintainer | Eugenio Minardi | 2026-07-02 | — |

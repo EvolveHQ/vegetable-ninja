@@ -1,7 +1,7 @@
 ---
 adr: 0102
 title: In-memory progression module
-status: Proposed
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -68,6 +68,8 @@ callers.
    — no direct access to its state from outside the module.
 3. No storage API (fopen, localStorage, or any I/O) is invoked for
    progression state anywhere in the codebase.
+3a. The legacy endless high-score persistence (file read/write on
+   native, localStorage on web) is removed along with the endless mode.
 4. Restarting the game yields a fresh progression state (only World 1
    Stage 1 unlocked, no stars).
 5. `completeLevel` enforces the monotonic best-star rule and the unlock
@@ -80,11 +82,11 @@ callers.
 
 ## Open questions
 
-- Fate of the existing endless-mode high-score persistence
-  (`vegninja_hiscore.txt` on native, localStorage on web): remove with
-  the endless mode, keep as-is, or fold into the future persistence
-  design? (Depends on the endless-mode question in
-  `adr/0002-saga-progression-structure.md`.)
+- None. (Resolved 2026-07-02: the endless mode is removed per
+  `adr/0002-saga-progression-structure.md`, and the legacy high-score
+  persistence — `vegninja_hiscore.txt` on native, localStorage on web —
+  is removed with it. The codebase carries no persistence code until
+  the future persistence ADR.)
 
 ## References
 
@@ -96,8 +98,10 @@ callers.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
+| 2026-07-02 | r2 | default-agent | Resolved hiscore-persistence question (legacy persistence removed); added AC 3a; status Accepted. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Maintainer | Eugenio Minardi | 2026-07-02 | — |

@@ -1,7 +1,7 @@
 ---
 adr: 0004
 title: Star ratings
-status: Proposed
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -22,9 +22,11 @@ completed stage, judged against per-level thresholds.
 ## Capability statement
 
 Completing a stage awards 1 to 3 stars based on thresholds defined in
-that level's config entry (e.g. score or accuracy tiers). The best star
-result per stage is retained for the session and shown both on the
-level-complete screen and beside the stage on the world map.
+that level's config entry, grading either score or accuracy — where
+accuracy is defined as vegetables sliced ÷ vegetables spawned during
+the run, bombs excluded from both counts. The best star result per
+stage is retained for the session and shown both on the level-complete
+screen and beside the stage on the world map.
 
 ## User stories / scenarios
 
@@ -57,10 +59,8 @@ level-complete screen and beside the stage on the world map.
 
 ## Open questions
 
-- The "accuracy" grading metric needs a definition — proposed:
-  vegetables sliced ÷ vegetables spawned during the run. Confirm or
-  replace before acceptance (mirrored in
-  `adr/0101-data-driven-level-config-table.md`).
+- None. (Resolved 2026-07-02: accuracy = vegetables sliced ÷ vegetables
+  spawned, bombs excluded from both counts.)
 
 ## References / cross-links
 
@@ -73,8 +73,10 @@ level-complete screen and beside the stage on the world map.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
+| 2026-07-02 | r2 | default-agent | Defined accuracy metric (sliced ÷ spawned, bombs excluded); status Accepted. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
+| Maintainer | Eugenio Minardi | 2026-07-02 | — |
