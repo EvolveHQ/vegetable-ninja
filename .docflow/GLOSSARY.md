@@ -15,5 +15,9 @@ short; link an ADR when a term is defined by a decision.
 | Miss | A vegetable that falls off-screen unsliced; costs a life. |
 | Design space | The fixed 1600x900 logical coordinate system all gameplay logic uses; letterboxed onto the actual window/canvas. |
 | SSAA target | The 2x supersampled render texture (3200x1800) the scene is drawn into before post-processing. |
+| World / Stage | The saga structure: 2 worlds of 10 stages, unlocked linearly; stage 10 of each world is the boss. |
+| Objective | A stage's single win condition: slice-count, survive-time, score-target, no-bomb, or combo-target. |
+| Star rating | 1–3 stars per completion, graded on score or accuracy against per-level thresholds; best per stage is kept. |
+| LevelDef | One row of the level config table in `levels.c` — the only place stage content is defined. |
 | Verify gate | `just all && just selftest` — both targets build and the scripted native self-test produces its screenshots. |
 | Self-test | `VegetableNinja.exe --selftest`: a scripted 270-frame session that saves `selftest_menu.png` and `selftest.png`. |

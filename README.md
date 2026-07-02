@@ -1,9 +1,11 @@
 # Vegetable Ninja
 
-A Fruit Ninja–style arcade slicing game — but with vegetables. Ships as a
-single native Windows exe **and** as a WebAssembly web build from the same
-`main.c`. Zero external assets: all art, sound effects and the background
-are generated procedurally at startup.
+A Fruit Ninja–style arcade slicing game — but with vegetables, and a
+saga-style level structure: 2 worlds × 10 stages with typed objectives,
+1–3 star ratings, and boss stages. Ships as a single native Windows exe
+**and** as a WebAssembly web build from the same C sources. Zero external
+assets: all art, sound effects and the background are generated
+procedurally at startup.
 
 ![screenshot](screenshot.png)
 
@@ -16,15 +18,20 @@ http://localhost:8377/ — wasm won't load from `file://`).
 | Input | Action |
 |---|---|
 | Hold **left mouse** + swipe | Slice vegetables |
-| **F11** | Borderless fullscreen |
+| **F11** | Borderless fullscreen (native) |
 | **P** | Pause |
 | **F** | FPS counter |
-| **ESC** | Menu / quit |
+| **ESC** | Back to map / title / quit |
 
-Slice everything except the bombs. A missed vegetable or a sliced bomb costs
-one of your three tomato lives. Slicing 3+ vegetables in one swipe scores a
-combo bonus. Difficulty (spawn rate, wave size, bomb frequency) ramps over
-time. Best score is saved to `vegninja_hiscore.txt` next to the exe.
+Pick a stage on the world map — stages unlock linearly, and World 2
+opens after beating World 1's boss. Each stage is a finite run with one
+objective: slice a count, survive the clock, hit a score, land a combo,
+or make it through without cutting a bomb. Missed vegetables and sliced
+bombs cost tomato lives; finishing earns 1–3 stars against per-stage
+thresholds (score or slicing accuracy). Retries are free and progress
+lives in memory for the session (persistence is planned). All 20 stage
+definitions live in one data table (`levels.c`) — tuning the game is a
+config edit, not a code change.
 
 ## Graphics
 
@@ -77,8 +84,10 @@ Web-build notes (hard-won, do not "simplify" away):
   orientation. Open `index.html?debug` for an fps counter and a marker
   showing the game's mapped pointer position (must sit on the OS cursor).
 
-`VegetableNinja.exe --selftest` runs a scripted 270-frame session and saves
-`selftest.png` / `selftest_menu.png` screenshots (used to verify the build).
+`VegetableNinja.exe --selftest` runs a scripted session through title →
+map → stage → level-complete and saves `selftest_menu.png`,
+`selftest_map.png`, `selftest.png`, and `selftest_complete.png`
+screenshots (used to verify the build).
 
 Font: [Luckiest Guy](https://fonts.google.com/specimen/Luckiest+Guy)
 (Apache 2.0), embedded in `font_data.h`.

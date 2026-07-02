@@ -11,14 +11,20 @@ file.
 ## Active state
 
 - **Branch:** master
-- **Active item:** none — no work in flight.
+- **Active item:** none — saga conversion (items 0001–0006) complete.
 - **Blockers:** none.
 - **Uncommitted work:** none.
 
 ## Last shipped
 
-`1a2638c` — v1.0.0 first release (native exe + wasm web build).
+Saga conversion complete: 20-stage level table, progression module,
+objective engine, world map, star ratings, outcome screens. All ADRs
+0001–0005, 0101–0102 Implemented. Verified: native selftest (title/
+map/play/complete screenshots) + live web smoke test (map unlocks and
+stars advancing through real play).
 
 ## Next item
 
-`ls .docflow/plan/todo/` for the queue; the lowest-numbered file runs next.
+`ls .docflow/plan/todo/` for the queue (currently empty). Known future
+work: persistence ADR behind the progress.h seam; human balance
+playtest (config-only tuning per ADR 0005 AC 4).

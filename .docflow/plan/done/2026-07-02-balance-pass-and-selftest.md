@@ -21,3 +21,6 @@ verification), `../adr/0002-saga-progression-structure.md`
 ## Dependencies
 
 - Items 0001–0005 all shipped.
+
+---
+Shipped: curve kept as maintainer-reviewed; extended selftest (map + play + complete screenshots) landed with items 0004/0005; verified by native selftest + live web smoke test (stages 1-2 completed, stage 3 unlocked, stars displayed). Human playtest tuning remains config-only.

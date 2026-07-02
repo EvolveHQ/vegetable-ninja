@@ -1,7 +1,7 @@
 ---
 adr: 0005
 title: Difficulty curve and boss stages
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -70,6 +70,7 @@ expressed in level config data, not in code.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Status Accepted (no open questions). |
+| 2026-07-02 | r3 | default-agent | Curve shipped in levels.c as reviewed; verified by scripted play + web smoke test; status Implemented. Fine-tuning remains config-only per AC 4. |
 
 ## Approvals
 
