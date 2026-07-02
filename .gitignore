@@ -1,0 +1,11 @@
+# toolchains + third-party libs (see README "Build" for how to restore)
+vendor/
+
+# build outputs
+web/
+VegetableNinja.exe
+
+# runtime / test artifacts
+.server.pid
+selftest*.png
+vegninja_hiscore.txt

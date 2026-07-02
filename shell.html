@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Vegetable Ninja</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #04110d; overflow: hidden; }
+  /* The canvas display size must ALWAYS equal the viewport: raylib keeps the
+     backbuffer at window.innerWidth/Height (FLAG_WINDOW_RESIZABLE), and any
+     mismatch between backbuffer and displayed size skews mouse coordinates.
+     !important beats the inline style GLFW sets at startup. */
+  canvas {
+    display: block;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    outline: none;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  #status {
+    position: absolute; color: #9fc9ae; font: 18px monospace;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+  }
+  #fsbtn {
+    position: fixed; right: 14px; bottom: 14px; z-index: 10;
+    width: 46px; height: 46px; border-radius: 10px;
+    border: 1px solid #3d6b52; background: rgba(8, 30, 22, 0.75);
+    color: #9fc9ae; font-size: 22px; line-height: 1; cursor: pointer;
+  }
+  #fsbtn:hover { background: rgba(20, 60, 44, 0.9); }
+</style>
+</head>
+<body>
+<div id="status">loading vegetables...</div>
+<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+<button id="fsbtn" title="Fullscreen" aria-label="Fullscreen">&#x26F6;</button>
+<script>
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    onRuntimeInitialized: function () {
+      var s = document.getElementById('status');
+      if (s) s.remove();
+    },
+    // Pointer state read by the game each frame (see main.c PLATFORM_WEB).
+    // clientX/Y are CSS px; the canvas backbuffer is kept at
+    // innerWidth/innerHeight, so CSS px == backbuffer px, no scaling needed.
+    pointer: { x: 0, y: 0, down: 0 }
+  };
+
+  (function () {
+    var P = Module.pointer;
+    window.addEventListener('mousemove', function (e) {
+      P.x = e.clientX; P.y = e.clientY;
+    }, true);
+    window.addEventListener('mousedown', function (e) {
+      if (e.button === 0) { P.x = e.clientX; P.y = e.clientY; P.down = 1; }
+    }, true);
+    window.addEventListener('mouseup', function (e) {
+      if (e.button === 0) P.down = 0;
+    }, true);
+    window.addEventListener('blur', function () { P.down = 0; });
+    function touch(e, down) {
+      var t = e.changedTouches[0];
+      if (t) { P.x = t.clientX; P.y = t.clientY; }
+      if (down >= 0) P.down = down;
+    }
+    window.addEventListener('touchstart', function (e) { touch(e, 1); }, { passive: true });
+    window.addEventListener('touchmove',  function (e) { touch(e, -1); }, { passive: true });
+    window.addEventListener('touchend',   function (e) { touch(e, 0); }, { passive: true });
+    window.addEventListener('touchcancel',function (e) { touch(e, 0); }, { passive: true });
+  })();
+
+  (function () {
+    var canvas = document.getElementById('canvas');
+    var fsbtn = document.getElementById('fsbtn');
+
+    function goFullscreen() {
+      var el = document.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (!req) return;
+      var p = req.call(el);
+      if (p && p.then) {
+        p.then(function () {
+          if (screen.orientation && screen.orientation.lock)
+            screen.orientation.lock('landscape').catch(function () {});
+        }).catch(function () {});
+      }
+      fsbtn.blur();   // don't let SPACE re-trigger the button
+    }
+
+    fsbtn.addEventListener('click', goFullscreen);
+    document.addEventListener('fullscreenchange', function () {
+      fsbtn.style.display = document.fullscreenElement ? 'none' : 'block';
+    });
+
+    // On touch devices, rotating to landscape arms the next tap to enter
+    // fullscreen (browsers only allow fullscreen from a user gesture).
+    if (window.matchMedia && 'ontouchstart' in window) {
+      var mq = window.matchMedia('(orientation: landscape)');
+      var onRotate = function (e) {
+        if (e.matches && !document.fullscreenElement) {
+          var once = function () {
+            canvas.removeEventListener('touchend', once);
+            goFullscreen();
+          };
+          canvas.addEventListener('touchend', once, { passive: true });
+        }
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onRotate);
+      else if (mq.addListener) mq.addListener(onRotate);
+    }
+  })();
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
