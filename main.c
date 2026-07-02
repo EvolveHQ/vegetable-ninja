@@ -656,11 +656,21 @@ static void ExplodeBomb(Vector2 pos) {
     LoseLife();
 }
 
-static void StartLevel(const LevelDef *lvl) {
+static void ClearStageEntities(void) {
     memset(gVeg, 0, sizeof(gVeg));   memset(gHalf, 0, sizeof(gHalf));
     memset(gPart, 0, sizeof(gPart)); memset(gSplat, 0, sizeof(gSplat));
     memset(gPopup, 0, sizeof(gPopup));
     gTrailLen = 0;
+}
+
+static void GoToMap(void) {
+    ClearStageEntities();                 // nothing lingers behind the map
+    gPaused = false;
+    gState = ST_MAP; gStateTime = 0;
+}
+
+static void StartLevel(const LevelDef *lvl) {
+    ClearStageEntities();
     gLevel = lvl;
     gScore = 0; gLives = lvl->lives; gSpawnTimer = 0.8f;
     gStageTime = 0; gSliced = 0; gSpawnedVeg = 0; gMaxCombo = 0;
@@ -1158,7 +1168,7 @@ static void UpdateDrawFrame(void) {
         break;
     case ST_PLAY:
         if (IsKeyPressed(KEY_P)) gPaused = !gPaused;
-        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; break; }
+        if (IsKeyPressed(KEY_ESCAPE)) { GoToMap(); break; }
         if (!gPaused) UpdatePlay(dt);
         break;
     case ST_COMPLETE:
@@ -1170,28 +1180,25 @@ static void UpdateDrawFrame(void) {
                 else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2)) &&
                          Progress_IsUnlocked(next->id))
                     StartLevel(next);
-                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 300))) {
-                    gState = ST_MAP; gStateTime = 0;
-                }
+                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 300)))
+                    GoToMap();
             } else {
                 if      (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 - 160)))
                     StartLevel(gLevel);
-                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160))) {
-                    gState = ST_MAP; gStateTime = 0;
-                }
+                else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160)))
+                    GoToMap();
             }
         }
-        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; }
+        if (IsKeyPressed(KEY_ESCAPE)) GoToMap();
         break;
     case ST_FAILED:
         if (gStateTime > 0.4f && gPointerPressed) {
             if      (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 - 160)))
                 StartLevel(gLevel);
-            else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160))) {
-                gState = ST_MAP; gStateTime = 0;
-            }
+            else if (CheckCollisionPointRec(gMouse, BtnRect(GAME_W/2 + 160)))
+                GoToMap();
         }
-        if (IsKeyPressed(KEY_ESCAPE)) { gState = ST_MAP; gStateTime = 0; }
+        if (IsKeyPressed(KEY_ESCAPE)) GoToMap();
         break;
     }
     if (!gPaused) UpdateCommon(dt);
