@@ -28,7 +28,7 @@ selftest: build
 # assemble the deployable static site (for https://vegetable.ninja) into dist/
 # (injects the consent-gated Google Analytics banner - dist only, not dev)
 dist: web
-    Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory dist | Out-Null; Copy-Item web\* dist\; Copy-Item favicon.svg dist\; Set-Content dist\CNAME 'vegetable.ninja' -NoNewline; $h = Get-Content dist\index.html -Raw; $s = Get-Content analytics-snippet.html -Raw; Set-Content dist\index.html ($h.Replace('</body>', $s + '</body>')) -NoNewline; Get-ChildItem dist | Select-Object Name, Length
+    Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory dist | Out-Null; Copy-Item web\* dist\; Copy-Item favicon.svg dist\; $h = Get-Content dist\index.html -Raw; $s = Get-Content analytics-snippet.html -Raw; Set-Content dist\index.html ($h.Replace('</body>', $s + '</body>')) -NoNewline; Get-ChildItem dist | Select-Object Name, Length
 
 # serve web/ at http://localhost:8377 in the background (survives shell exit)
 up:
