@@ -1,7 +1,7 @@
 ---
 adr: 0004
 title: Star ratings
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -74,6 +74,7 @@ screen and beside the stage on the world map.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Defined accuracy metric (sliced ÷ spawned, bombs excluded); status Accepted. |
+| 2026-07-02 | r3 | default-agent | Shipped: stars + screens + map display (3429f46); status Implemented. |
 
 ## Approvals
 

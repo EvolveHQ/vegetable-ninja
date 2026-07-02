@@ -1,7 +1,7 @@
 ---
 adr: 0002
 title: Saga progression structure
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -78,6 +78,7 @@ the title screen to the world map.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Resolved endless-mode question (removed); added AC 8; status Accepted. |
+| 2026-07-02 | r3 | default-agent | Shipped: map + flow (fe59fa2), outcome-screen buttons (3429f46); status Implemented. |
 
 ## Approvals
 

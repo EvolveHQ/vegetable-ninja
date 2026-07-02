@@ -17,3 +17,6 @@ Owning ADR: `../adr/0002-saga-progression-structure.md`
 ## Dependencies
 
 - Items 0001 (level list to display) and 0002 (unlock state).
+
+---
+Shipped at HEAD `fe59fa2`. ADR 0002 AC 6 (outcome-screen buttons) completes with the stars item.

@@ -1,7 +1,7 @@
 ---
 adr: 0003
 title: Typed finite stage objectives
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -75,6 +75,7 @@ come from the level config; gameplay code contains no per-level logic.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Status Accepted (no open questions). |
+| 2026-07-02 | r3 | default-agent | Shipped: objective engine (e32d304), outcome routing (3429f46); status Implemented. |
 
 ## Approvals
 

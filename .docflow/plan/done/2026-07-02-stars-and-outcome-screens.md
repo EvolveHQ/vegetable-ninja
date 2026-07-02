@@ -19,3 +19,6 @@ Owning ADR: `../adr/0004-star-ratings.md`
 ## Dependencies
 
 - Items 0003 (objective outcomes) and 0004 (map + flow).
+
+---
+Shipped at HEAD `3429f46`.
