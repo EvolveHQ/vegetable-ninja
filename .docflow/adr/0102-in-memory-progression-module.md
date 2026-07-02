@@ -1,7 +1,7 @@
 ---
 adr: 0102
 title: In-memory progression module
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -99,6 +99,7 @@ callers.
 |------|----------|--------|--------|
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Resolved hiscore-persistence question (legacy persistence removed); added AC 3a; status Accepted. |
+| 2026-07-02 | r3 | default-agent | Shipped as progress.h/.c at 1ab1422; status Implemented. |
 
 ## Approvals
 

@@ -27,3 +27,6 @@ Owning ADRs: `../adr/0101-data-driven-level-config-table.md`,
 ## Dependencies
 
 - None (first item; item 0002 can run in parallel).
+
+---
+Shipped at HEAD `1ab1422`. Schema + 20-level table maintainer-approved in review.

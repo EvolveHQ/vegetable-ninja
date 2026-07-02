@@ -21,3 +21,6 @@ Owning ADR: `../adr/0102-in-memory-progression-module.md`
 ## Dependencies
 
 - None (parallel with item 0001).
+
+---
+Shipped at HEAD `1ab1422`.
