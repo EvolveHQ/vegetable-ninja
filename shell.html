@@ -30,12 +30,20 @@
     color: #9fc9ae; font-size: 22px; line-height: 1; cursor: pointer;
   }
   #fsbtn:hover { background: rgba(20, 60, 44, 0.9); }
+  #credit {
+    position: fixed; left: 14px; bottom: 14px; z-index: 10;
+    color: #6f8f7c; font: 13px system-ui, sans-serif;
+  }
+  #credit a { color: #9fc9ae; text-decoration: none; }
+  #credit a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <div id="status">loading vegetables...</div>
 <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 <button id="fsbtn" title="Fullscreen" aria-label="Fullscreen">&#x26F6;</button>
+<div id="credit">created with &#x2665; using
+  <a href="https://evolvehq.github.io/docflow/" target="_blank" rel="noopener">docflow</a></div>
 <script>
   var Module = {
     canvas: document.getElementById('canvas'),
