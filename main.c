@@ -622,16 +622,20 @@ static void SliceVeg(int vi, Vector2 bladeDir) {
                       (Color){ 255, 255, 230, 255 }, true, 2.5f);
 
     SpawnSplat(v->pos, juice);
+    PlaySplat(); PlaySlice();
+    gShake = fmaxf(gShake, 0.12f);
+
+    // results freeze the moment the outcome is decided: slicing in the
+    // brief window before the outcome screen stays juicy but is cosmetic
+    // (see .docflow/adr/0003-typed-finite-stage-objectives.md, AC 7)
+    if (gOutcome) return;
     gScore += 10;
     SpawnPopup(v->pos, "+10", 34, (Color){ 255, 255, 255, 255 });
-    PlaySplat(); PlaySlice();
-
     gSliced++;
     gComboCount++;
     if (gComboCount > gMaxCombo) gMaxCombo = gComboCount;
     gComboTimer = 0.42f;
     gComboPos = v->pos;
-    gShake = fmaxf(gShake, 0.12f);
 }
 
 static void ExplodeBomb(Vector2 pos) {
@@ -748,7 +752,7 @@ static void UpdatePlay(float dt) {
     if (gComboTimer > 0) {
         gComboTimer -= dt;
         if (gComboTimer <= 0) {
-            if (gComboCount >= 3) {
+            if (gComboCount >= 3 && !gOutcome) {   // no bonuses after the freeze
                 int bonus = gComboCount * 10;
                 gScore += bonus;
                 SpawnPopup(gComboPos, TextFormat("COMBO x%d  +%d", gComboCount, bonus),
