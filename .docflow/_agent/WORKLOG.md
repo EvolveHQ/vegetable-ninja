@@ -15,3 +15,4 @@ Append one row per commit. Newest at the bottom.
 | 2026-07-03 | 25e0cf3 | master | plan 0005 (wave 2) | Accuracy = sliced/(sliced+missed), counted at resolution; gate green. ADR 0004 Implemented. |
 | 2026-07-03 | b471a0f | master | plan 0006 (wave 2) | Chain-window combo definition adopted in levels.h (comment-only); gate green. ADR 0003 Implemented — wave 2 queue complete. |
 | 2026-07-03 | 29a92a0 | master | plan 0001 (version) | Build identity from git describe; title corner + page footer; gate green (menu screenshot verified). ADRs 0007 + 0104 Implemented. |
+| 2026-07-03 | cfbcfd2 | master | plan 0001 (version) follow-up | Footer stamp silently failed via just one-liner (ADR 0104 AC 4); dist assembly moved into build.ps1 with a hard stamp guard; live site verified = git describe. |
