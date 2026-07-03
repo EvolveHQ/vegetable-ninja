@@ -20,3 +20,8 @@ Owning ADR: `../adr/0003-typed-finite-stage-objectives.md`
 ## Dependencies
 
 - None (parallelizable with items 0003, 0004, 0005).
+
+---
+Shipped at HEAD `b471a0f`. Gate green. ADR 0003 AC 8: the mechanic
+already matched the adopted spec; the stale "one swipe" comment is
+gone. With AC 7 (item 0004), ADR 0003 is fully implemented again.

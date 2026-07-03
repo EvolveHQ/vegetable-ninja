@@ -1,7 +1,7 @@
 ---
 adr: 0003
 title: Typed finite stage objectives
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -87,6 +87,7 @@ come from the level config; gameplay code contains no per-level logic.
 | 2026-07-02 | r3 | default-agent | Shipped: objective engine (e32d304), outcome routing (3429f46); status Implemented. |
 | 2026-07-03 | r4 | default-agent | Results freeze at outcome decision (criterion 7); post-decision play is cosmetic. Returns to Accepted pending re-implementation. |
 | 2026-07-03 | r5 | default-agent | Combo defined as chain-window sequence, swipe-agnostic (criterion 8), adopting the shipped mechanic as spec. |
+| 2026-07-03 | r6 | default-agent | Shipped: results freeze (plan 0004, d28c49a) + combo comment alignment (plan 0006, b471a0f); AC 7–8 done; status Implemented. |
 
 ## Approvals
 

@@ -11,19 +11,26 @@ file.
 ## Active state
 
 - **Branch:** master
-- **Active item:** working the adversarial-analysis queue (wave 2,
-  items 0001–0006); 0001–0004 shipped, 0005 next.
+- **Active item:** none — adversarial-analysis queue (wave 2, items
+  0001–0006) complete.
 - **Blockers:** none.
-- **Uncommitted work:** ship bookkeeping for 0004 (own docs commit).
+- **Uncommitted work:** none.
 
 ## Last shipped
 
-Plan 0004 freeze results at outcome (`d28c49a`): post-decision play is
-cosmetic; outcome screen score equals graded score. ADR 0003 AC 7 done
-(AC 8 pending item 0006).
+Wave 2 complete (items 0001–0006): web pointer contract (Pointer
+Events + capture), hitch-slice bounding, startup config validation +
+hardening, results freeze at outcome, resolution-based accuracy, combo
+spec alignment. All ADRs (0001–0006, 0101–0103) Implemented. Every
+item gate-verified; item 0001 additionally verified with in-browser
+synthetic pointer checks (10/10).
 
 ## Next item
 
-`todo/0005-accuracy-at-resolution` (ADR 0004 AC 6), then 0006.
+`ls .docflow/plan/todo/` for the queue (currently empty). Known future
+work: persistence ADR behind the progress.h seam; human balance
+playtest (config-only tuning per ADR 0005 AC 4); a manual two-finger
+touch check of the web build on a real device would be a nice extra
+confirmation of ADR 0103 AC 4.
 Known future work: persistence ADR behind the progress.h seam; human
 balance playtest (config-only tuning per ADR 0005 AC 4).
