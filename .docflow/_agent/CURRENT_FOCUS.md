@@ -11,20 +11,20 @@ file.
 ## Active state
 
 - **Branch:** master
-- **Active item:** none — saga conversion (items 0001–0006) complete.
+- **Active item:** working the adversarial-analysis queue (wave 2,
+  items 0001–0006); 0001 shipped, 0002 next.
 - **Blockers:** none.
-- **Uncommitted work:** none.
+- **Uncommitted work:** ship bookkeeping for 0001 (commits with item
+  0002's flow or its own docs commit).
 
 ## Last shipped
 
-Saga conversion complete: 20-stage level table, progression module,
-objective engine, world map, star ratings, outcome screens. All ADRs
-0001–0005, 0101–0102 Implemented. Verified: native selftest (title/
-map/play/complete screenshots) + live web smoke test (map unlocks and
-stars advancing through real play).
+Plan 0001 web pointer contract (`774fac8`): shell.html Pointer Events
+with capture, single-pointerId blade. ADR 0103 Implemented. Verified
+by gate + 10/10 in-browser synthetic pointer checks.
 
 ## Next item
 
-`ls .docflow/plan/todo/` for the queue (currently empty). Known future
-work: persistence ADR behind the progress.h seam; human balance
-playtest (config-only tuning per ADR 0005 AC 4).
+`todo/0002-hitch-slice-bounding` (ADR 0006 AC 4), then 0003–0006.
+Known future work: persistence ADR behind the progress.h seam; human
+balance playtest (config-only tuning per ADR 0005 AC 4).

@@ -27,3 +27,11 @@ Owning ADRs: `../adr/0006-blade-cut-integrity.md`,
 ## Dependencies
 
 - None (runs first — exploit-class).
+
+---
+Shipped at HEAD `774fac8`. ADR 0103
+AC 1–5 verified via gate + live in-browser synthetic pointer checks
+(10/10: second pointer ignored on down/move/up, blade tracks,
+release/cancel clear, right-button ignored, hover preserved). ADR 0006
+AC 2 was already satisfied by the existing fresh-press reset in main.c;
+AC 4 remains for item 0002.

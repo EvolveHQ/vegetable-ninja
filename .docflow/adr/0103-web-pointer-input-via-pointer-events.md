@@ -1,7 +1,7 @@
 ---
 adr: 0103
 title: Web pointer input via Pointer Events
-status: Accepted
+status: Implemented
 date: 2026-07-03
 owner: default-agent
 supersedes:
@@ -104,6 +104,7 @@ handler remains as belt-and-braces.
 |------|----------|--------|--------|
 | 2026-07-03 | r1 | default-agent | Initial draft from approved brainstorm outline (adversarial-analysis findings). |
 | 2026-07-03 | r2 | default-agent | Status Accepted (no open questions; outline approved by maintainer). |
+| 2026-07-03 | r3 | default-agent | Shipped: shell.html Pointer Events rewrite (plan 0001); AC 1–5 verified (gate + in-browser synthetic pointer checks, 10/10 pass); status Implemented. |
 
 ## Approvals
 
