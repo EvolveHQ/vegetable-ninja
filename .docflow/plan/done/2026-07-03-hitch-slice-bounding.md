@@ -20,3 +20,8 @@ Owning ADR: `../adr/0006-blade-cut-integrity.md`
 
 - Item 0001 (same blade-input code block; land sequentially to avoid
   conflicting edits).
+
+---
+Shipped at HEAD `0ad1b4f`. Gate green; selftest screenshot confirms
+the scripted sweep still slices (real speed clears the gate). ADR 0006
+AC 4 done — with item 0001's AC 1/2/3/5, ADR 0006 is fully implemented.

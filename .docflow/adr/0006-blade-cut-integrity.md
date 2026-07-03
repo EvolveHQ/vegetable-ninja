@@ -1,7 +1,7 @@
 ---
 adr: 0006
 title: Blade cut integrity
-status: Accepted
+status: Implemented
 date: 2026-07-03
 owner: default-agent
 supersedes:
@@ -98,6 +98,7 @@ genuinely pressed.
 |------|----------|--------|--------|
 | 2026-07-03 | r1 | default-agent | Initial draft from approved brainstorm outline (adversarial-analysis findings). |
 | 2026-07-03 | r2 | default-agent | Status Accepted (no open questions; outline approved by maintainer). |
+| 2026-07-03 | r3 | default-agent | Shipped: AC 1/2/3/5 via plan 0001 (774fac8, Pointer Events contract), AC 4 via plan 0002 (0ad1b4f, real-dt speed gate); status Implemented. |
 
 ## Approvals
 

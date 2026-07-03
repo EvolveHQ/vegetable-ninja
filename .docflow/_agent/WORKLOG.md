@@ -9,3 +9,4 @@ Append one row per commit. Newest at the bottom.
 | 2026-07-02 | fe59fa2 | master | plan 0004 | World map + saga flow; endless removed; gate green (map screenshot verified). |
 | 2026-07-02 | 3429f46 | master | plan 0005 | Stars + outcome screens + map stars; gate green (complete screen verified). ADRs 0002/0003/0004 Implemented. Note: item-0004 done-move rode along in this commit. |
 | 2026-07-03 | 774fac8 | master | plan 0001 (wave 2) | shell.html Pointer Events + capture, single-pointerId blade; gate green + 10/10 in-browser synthetic pointer checks. ADR 0103 Implemented; 0006 stays Accepted until item 0002 (AC 4). |
+| 2026-07-03 | 0ad1b4f | master | plan 0002 (wave 2) | Blade speed gate uses real frame time (hitch-slice fix); gate green, selftest sweep still slices. ADR 0006 Implemented. |
