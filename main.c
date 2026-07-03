@@ -98,7 +98,7 @@ static float gSpawnTimer, gShake, gAberr, gFlash;
 // active stage state (all objective logic reads gLevel — never a level id)
 static const LevelDef *gLevel = NULL;
 static float gStageTime;
-static int   gSliced, gSpawnedVeg, gMaxCombo;
+static int   gSliced, gMissedVeg, gMaxCombo;
 static int   gOutcome;              // 0 = playing, 1 = success, 2 = failed
 static float gOutcomeTimer;         // lets effects breathe before the screen switch
 static int   gStarsEarned;
@@ -550,7 +550,6 @@ static void LaunchOne(bool bomb) {
         VegType t;
         do { t = (VegType)GetRandomValue(0, VEG_COUNT - 1); }
         while (!(gLevel->vegMask & (1u << t)));
-        if (!bomb) gSpawnedVeg++;
         float x = frand(GAME_W * 0.15f, GAME_W * 0.85f);
         float vx = (GAME_W/2 - x) * frand(0.15f, 0.55f) + frand(-60, 60);
         float vy = -frand(1050, 1380);
@@ -573,7 +572,11 @@ static void DecideOutcome(bool success) {
     gOutcome = success ? 1 : 2;
     gOutcomeTimer = 1.0f;
     if (success) {
-        gAccuracy = gSpawnedVeg > 0 ? (float)gSliced / (float)gSpawnedVeg : 1.0f;
+        // accuracy grades resolved vegetables only (sliced or missed);
+        // in-flight ones at the decision moment count in neither term
+        // (see .docflow/adr/0004-star-ratings.md, AC 6)
+        int resolved = gSliced + gMissedVeg;
+        gAccuracy = resolved > 0 ? (float)gSliced / (float)resolved : 1.0f;
         float metric = (gLevel->starMetric == METRIC_SCORE) ? (float)gScore : gAccuracy;
         gStarsEarned = 1 + (metric >= gLevel->star2) + (metric >= gLevel->star3);
         Progress_CompleteLevel(gLevel->id, gStarsEarned);
@@ -685,7 +688,7 @@ static void StartLevel(const LevelDef *lvl) {
     ClearStageEntities();
     gLevel = lvl;
     gScore = 0; gLives = lvl->lives; gSpawnTimer = 0.8f;
-    gStageTime = 0; gSliced = 0; gSpawnedVeg = 0; gMaxCombo = 0;
+    gStageTime = 0; gSliced = 0; gMissedVeg = 0; gMaxCombo = 0;
     gOutcome = 0; gOutcomeTimer = 0; gStarsEarned = 0; gAccuracy = 0;
     gComboCount = 0; gComboTimer = 0;
     gShake = gAberr = gFlash = 0;
@@ -741,6 +744,7 @@ static void UpdatePlay(float dt) {
         if (v->pos.y > GAME_H + 140 && v->vel.y > 0) {    // fell off screen
             v->active = false;
             if (!v->isBomb) {
+                if (!gOutcome) gMissedVeg++;   // results frozen after decision
                 LoseLife();
                 SpawnPopup((Vector2){ Clamp(v->pos.x, 60, GAME_W - 60), GAME_H - 60 },
                            "MISS", 40, (Color){ 255, 80, 80, 255 });

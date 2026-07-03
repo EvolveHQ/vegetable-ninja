@@ -14,7 +14,8 @@ typedef enum {
 
 typedef enum {
     METRIC_SCORE,      // star thresholds grade the run's score
-    METRIC_ACCURACY    // star thresholds grade sliced/spawned (bombs excluded)
+    METRIC_ACCURACY    // star thresholds grade sliced/resolved, i.e.
+                       // sliced/(sliced+missed) — bombs and in-flight excluded
 } StarMetric;
 
 // Bits match the VegType enum order in main.c.
