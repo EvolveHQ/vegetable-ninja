@@ -1,7 +1,7 @@
 ---
 adr: 0101
 title: Data-driven level config table
-status: Implemented
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -31,7 +31,9 @@ index, display name, objective type + parameters, spawn interval /
 ramp, allowed vegetable types (bitmask), bomb frequency, stage time
 window where applicable, and 2-star / 3-star thresholds with the metric
 they grade. Gameplay code consumes the active `LevelDef` generically;
-no `switch` on level id and no per-level functions.
+no `switch` on level id and no per-level functions. The table is
+validated once at startup: a degenerate row fails fast with a
+diagnostic instead of hanging or misbehaving mid-run.
 
 ## Rationale
 
@@ -71,6 +73,11 @@ no `switch` on level id and no per-level functions.
    grep finds no branch on a concrete level id in gameplay logic.
 4. Adding a playable new stage requires only appending a row (plus map
    capacity), with no gameplay-code change.
+5. Startup validates every row before play is possible: non-empty
+   vegetable set, positive time window and spawn interval, wave size
+   ≥ 1, and star thresholds ordered (2-star ≤ 3-star). A violating row
+   stops the program at startup with a diagnostic naming the row; in
+   particular, an empty vegetable set can never reach the spawn loop.
 
 ## Out of scope
 
@@ -79,9 +86,10 @@ no `switch` on level id and no per-level functions.
 
 ## Open questions
 
-- None. (Resolved 2026-07-02: accuracy = vegetables sliced ÷ vegetables
-  spawned, bombs excluded — per `adr/0004-star-ratings.md`; the schema
-  names `score` and `accuracy` as gradable star metrics.)
+- None. (Resolved 2026-07-02: the schema names `score` and `accuracy`
+  as gradable star metrics; the accuracy formula is owned by
+  `adr/0004-star-ratings.md`, revised there 2026-07-03 to
+  sliced ÷ resolved.)
 
 ## References
 
@@ -97,9 +105,11 @@ no `switch` on level id and no per-level functions.
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Resolved accuracy-metric question (sliced ÷ spawned, bombs excluded); status Accepted. |
 | 2026-07-02 | r3 | default-agent | Shipped as levels.h/.c (1ab1422) + gameplay consumption (e32d304); status Implemented. |
+| 2026-07-03 | r4 | default-agent | Startup validation of the table (criterion 5): fail fast on degenerate rows (empty veg set, non-positive timings, wave < 1, unordered thresholds). Accuracy note deferred to ADR 0004. Returns to Accepted pending re-implementation. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
 | Maintainer | Eugenio Minardi | 2026-07-02 | — |
+| Maintainer | Eugenio Minardi | 2026-07-03 | — |
