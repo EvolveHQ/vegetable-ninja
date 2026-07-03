@@ -93,6 +93,10 @@ handler remains as belt-and-braces.
   captures the mouse while a button is held.
 - Gamepad or keyboard-driven blade input.
 
+## Open questions
+
+- None.
+
 ## References
 
 - adr/0006-blade-cut-integrity.md
