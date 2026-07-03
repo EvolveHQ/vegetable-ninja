@@ -12,3 +12,4 @@ Append one row per commit. Newest at the bottom.
 | 2026-07-03 | 0ad1b4f | master | plan 0002 (wave 2) | Blade speed gate uses real frame time (hitch-slice fix); gate green, selftest sweep still slices. ADR 0006 Implemented. |
 | 2026-07-03 | 2f55fb5 | master | plan 0003 (wave 2) | Startup level-table validation, spawn guard, capacity static assert, malloc/scale hardening, F-key comment; gate green. ADR 0101 Implemented. |
 | 2026-07-03 | d28c49a | master | plan 0004 (wave 2) | Results freeze at outcome decision (cosmetic grace window); gate green. ADR 0003 stays Accepted until item 0006 (AC 8). |
+| 2026-07-03 | 25e0cf3 | master | plan 0005 (wave 2) | Accuracy = sliced/(sliced+missed), counted at resolution; gate green. ADR 0004 Implemented. |

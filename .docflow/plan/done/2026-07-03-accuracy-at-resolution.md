@@ -20,3 +20,8 @@ Owning ADR: `../adr/0004-star-ratings.md`
 ## Dependencies
 
 - None (parallelizable with items 0003, 0004, 0006).
+
+---
+Shipped at HEAD `25e0cf3`. Gate green. ADR 0004 AC 6 implemented
+(gMissedVeg counter at resolution, frozen after the outcome decision);
+AC 1–5 unchanged and still hold.

@@ -1,7 +1,7 @@
 ---
 adr: 0004
 title: Star ratings
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -83,6 +83,7 @@ screen and beside the stage on the world map.
 | 2026-07-02 | r2 | default-agent | Defined accuracy metric (sliced ÷ spawned, bombs excluded); status Accepted. |
 | 2026-07-02 | r3 | default-agent | Shipped: stars + screens + map display (3429f46); status Implemented. |
 | 2026-07-03 | r4 | default-agent | Accuracy redefined to sliced ÷ resolved (sliced + missed): in-flight vegetables at decision time count in neither term. Returns to Accepted pending re-implementation. |
+| 2026-07-03 | r5 | default-agent | Shipped: resolution-based miss counter (plan 0005, 25e0cf3); status Implemented. |
 
 ## Approvals
 
