@@ -9,7 +9,9 @@ typedef enum {
     OBJ_SURVIVE_TIME,  // survive timeLimit with lives remaining
     OBJ_SCORE_TARGET,  // reach objTarget score before timeLimit
     OBJ_NO_BOMB,       // reach timeLimit without slicing a bomb
-    OBJ_COMBO          // land a combo of objTarget in one swipe before timeLimit
+    OBJ_COMBO          // land a combo of objTarget slices before timeLimit —
+                       // a chain where each slice lands within a short fixed
+                       // window of the previous; swipe continuity not required
 } ObjectiveType;
 
 typedef enum {
