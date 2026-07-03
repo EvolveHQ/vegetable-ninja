@@ -20,3 +20,6 @@ Owning ADRs: `../adr/0007-visible-build-identity.md`,
 ## Dependencies
 
 - None.
+
+---
+Shipped at HEAD `29a92a0`. Verified: selftest menu screenshot shows the version corner.

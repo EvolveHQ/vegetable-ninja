@@ -1,7 +1,7 @@
 ---
 adr: 0007
 title: Visible build identity
-status: Accepted
+status: Implemented
 date: 2026-07-03
 owner: default-agent
 supersedes:
@@ -67,6 +67,7 @@ string uniquely identifies the built commit.
 | Date | Revision | Author | Change |
 |------|----------|--------|--------|
 | 2026-07-03 | r1 | default-agent | Initial draft from approved brainstorm outline; status Accepted. |
+| 2026-07-03 | r2 | default-agent | Shipped at 29a92a0 (plan 0001 version-identity); status Implemented. |
 
 ## Approvals
 
