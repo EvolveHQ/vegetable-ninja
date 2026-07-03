@@ -1,7 +1,7 @@
 ---
 adr: 0004
 title: Star ratings
-status: Implemented
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -23,8 +23,10 @@ completed stage, judged against per-level thresholds.
 
 Completing a stage awards 1 to 3 stars based on thresholds defined in
 that level's config entry, grading either score or accuracy — where
-accuracy is defined as vegetables sliced ÷ vegetables spawned during
-the run, bombs excluded from both counts. The best star result per
+accuracy is defined as vegetables sliced ÷ vegetables resolved
+(sliced + missed) during the run, bombs excluded from both counts; a
+vegetable still in flight when the outcome is decided affects neither
+term. The best star result per
 stage is retained for the session and shown both on the level-complete
 screen and beside the stage on the world map.
 
@@ -49,6 +51,10 @@ screen and beside the stage on the world map.
    lowers it.
 5. Star thresholds and the metric they grade live in the level config
    (`adr/0101-data-driven-level-config-table.md`), not in gameplay code.
+6. Accuracy counts only resolved vegetables: a vegetable spawned but
+   neither sliced nor missed when the outcome is decided appears in
+   neither the numerator nor the denominator, so a run with no misses
+   grades as 100% accuracy.
 
 ## Out of scope
 
@@ -59,8 +65,9 @@ screen and beside the stage on the world map.
 
 ## Open questions
 
-- None. (Resolved 2026-07-02: accuracy = vegetables sliced ÷ vegetables
-  spawned, bombs excluded from both counts.)
+- None. (Resolved 2026-07-02: accuracy = sliced ÷ spawned; revised
+  2026-07-03 in r4 to sliced ÷ resolved so in-flight vegetables at the
+  decision moment do not dock the grade.)
 
 ## References / cross-links
 
@@ -75,9 +82,11 @@ screen and beside the stage on the world map.
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Defined accuracy metric (sliced ÷ spawned, bombs excluded); status Accepted. |
 | 2026-07-02 | r3 | default-agent | Shipped: stars + screens + map display (3429f46); status Implemented. |
+| 2026-07-03 | r4 | default-agent | Accuracy redefined to sliced ÷ resolved (sliced + missed): in-flight vegetables at decision time count in neither term. Returns to Accepted pending re-implementation. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
 | Maintainer | Eugenio Minardi | 2026-07-02 | — |
+| Maintainer | Eugenio Minardi | 2026-07-03 | — |
