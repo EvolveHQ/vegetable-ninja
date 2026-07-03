@@ -1,7 +1,7 @@
 ---
 adr: 0003
 title: Typed finite stage objectives
-status: Implemented
+status: Accepted
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -51,6 +51,15 @@ come from the level config; gameplay code contains no per-level logic.
    window expires without the target being met.
 6. Success and failure route to the level-complete / level-failed
    screens defined in `adr/0002-saga-progression-structure.md`.
+7. The run's recorded results — score, star-grading inputs, lives, and
+   objective state — are frozen at the moment the outcome is decided.
+   Play during the brief window before the outcome screen is cosmetic
+   only; in particular, the score shown on the outcome screen equals
+   the score the stars were graded on.
+8. A combo is a chain of slices in which each slice lands within a
+   fixed short chain window of the previous one; swipe continuity is
+   not required. The combo objective is met when a single chain
+   reaches length Z.
 
 ## Out of scope
 
@@ -76,9 +85,12 @@ come from the level config; gameplay code contains no per-level logic.
 | 2026-07-02 | r1 | default-agent | Initial draft from approved brainstorm outline. |
 | 2026-07-02 | r2 | default-agent | Status Accepted (no open questions). |
 | 2026-07-02 | r3 | default-agent | Shipped: objective engine (e32d304), outcome routing (3429f46); status Implemented. |
+| 2026-07-03 | r4 | default-agent | Results freeze at outcome decision (criterion 7); post-decision play is cosmetic. Returns to Accepted pending re-implementation. |
+| 2026-07-03 | r5 | default-agent | Combo defined as chain-window sequence, swipe-agnostic (criterion 8), adopting the shipped mechanic as spec. |
 
 ## Approvals
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
 | Maintainer | Eugenio Minardi | 2026-07-02 | — |
+| Maintainer | Eugenio Minardi | 2026-07-03 | — |
