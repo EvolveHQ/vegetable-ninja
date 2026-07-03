@@ -1,7 +1,7 @@
 ---
 adr: 0101
 title: Data-driven level config table
-status: Accepted
+status: Implemented
 date: 2026-07-02
 owner: default-agent
 supersedes:
@@ -106,6 +106,7 @@ diagnostic instead of hanging or misbehaving mid-run.
 | 2026-07-02 | r2 | default-agent | Resolved accuracy-metric question (sliced ÷ spawned, bombs excluded); status Accepted. |
 | 2026-07-02 | r3 | default-agent | Shipped as levels.h/.c (1ab1422) + gameplay consumption (e32d304); status Implemented. |
 | 2026-07-03 | r4 | default-agent | Startup validation of the table (criterion 5): fail fast on degenerate rows (empty veg set, non-positive timings, wave < 1, unordered thresholds). Accuracy note deferred to ADR 0004. Returns to Accepted pending re-implementation. |
+| 2026-07-03 | r5 | default-agent | Shipped: Levels_FirstInvalid() + fail-fast startup check, spawn guard, capacity static assert (plan 0003, 2f55fb5); status Implemented. |
 
 ## Approvals
 

@@ -26,3 +26,9 @@ no spec change there)
 ## Dependencies
 
 - None (parallelizable with items 0004–0006).
+
+---
+Shipped at HEAD `2f55fb5`. Gate green. ADR 0101 AC 5 implemented via
+Levels_FirstInvalid() + fail-fast in main(); spawn-loop guard,
+LEVELS_MAX_COUNT static assert, malloc checks, scale guard, and the
+F-key comment fix rode along as scoped.
