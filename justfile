@@ -28,7 +28,7 @@ selftest: build
 # assemble the deployable static site (for https://vegetable.ninja) into dist/
 # (injects the consent-gated Google Analytics banner - dist only, not dev)
 dist: web
-    $keep = @('publish.ps1','server.js') | Where-Object { Test-Path "dist\$_" }; foreach ($k in $keep) { Copy-Item "dist\$k" "$env:TEMP\vn-$k" }; Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory dist | Out-Null; Copy-Item web\* dist\; Copy-Item favicon.svg dist\; $h = Get-Content dist\index.html -Raw; $s = Get-Content analytics-snippet.html -Raw; Set-Content dist\index.html ($h.Replace('</body>', $s + '</body>')) -NoNewline; foreach ($k in $keep) { Copy-Item "$env:TEMP\vn-$k" "dist\$k" }; Get-ChildItem dist | Select-Object Name, Length
+    $keep = @('publish.ps1','server.js') | Where-Object { Test-Path "dist\$_" }; foreach ($k in $keep) { Copy-Item "dist\$k" "$env:TEMP\vn-$k" }; Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory dist | Out-Null; Copy-Item web\* dist\; Copy-Item favicon.svg dist\; $v = ''; try { $v = (git describe --tags --always --dirty 2>$null) } catch {}; if (-not $v) { $v = 'dev' }; $h = Get-Content dist\index.html -Raw; $s = Get-Content analytics-snippet.html -Raw; $h = $h.Replace('</body>', $s + '</body>').Replace('id="credit">created', 'id="credit">' + $v + ' &#183; created'); Set-Content dist\index.html $h -NoNewline; foreach ($k in $keep) { Copy-Item "$env:TEMP\vn-$k" "dist\$k" }; Get-ChildItem dist | Select-Object Name, Length
 
 # serve web/ at http://localhost:8377 in the background (survives shell exit)
 up:

@@ -6,6 +6,14 @@ param([string]$Target = "native")
 
 $ErrorActionPreference = "Stop"
 
+# Build identity: generated header, single source of truth is git describe.
+# See .docflow/adr/0104-git-derived-build-version.md
+$ver = ""
+try { $ver = (git describe --tags --always --dirty 2>$null) } catch {}
+if (-not $ver) { $ver = "dev" }
+Set-Content version.h "#define GAME_VERSION `"$ver`"" -NoNewline
+Write-Host "version: $ver"
+
 if ($Target -eq "native" -or $Target -eq "all") {
     $rl = ".\vendor\raylib-5.5_win64_mingw-w64"
     gcc main.c levels.c progress.c -o VegetableNinja.exe -O2 -Wall -Wextra `

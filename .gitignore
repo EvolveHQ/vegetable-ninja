@@ -5,6 +5,7 @@ vendor/
 web/
 dist/
 VegetableNinja.exe
+version.h
 
 # runtime / test artifacts
 .server.pid
