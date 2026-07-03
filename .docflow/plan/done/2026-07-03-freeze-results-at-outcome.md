@@ -21,3 +21,9 @@ Owning ADR: `../adr/0003-typed-finite-stage-objectives.md`
 ## Dependencies
 
 - None (parallelizable with items 0003, 0005, 0006).
+
+---
+Shipped at HEAD `d28c49a`. Gate green; the selftest exercises the
+window (outcome decided mid-sweep, slicing continues to the complete
+screen). ADR 0003 AC 7 done; the ADR stays Accepted until item 0006
+closes AC 8.
