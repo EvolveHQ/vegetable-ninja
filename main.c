@@ -9,7 +9,7 @@
 //  at startup — the exe has zero external assets.
 //
 //  Controls: hold LEFT MOUSE and swipe to slice. Don't slice bombs.
-//            F11 fullscreen, P pause, F3 fps, ESC menu/quit.
+//            F11 fullscreen, P pause, F fps, ESC menu/quit.
 // ============================================================================
 
 #include "raylib.h"
@@ -435,6 +435,7 @@ static void InitSounds(void) {
 
     int n = (int)(SR * 0.22f);                            // blade swoosh
     short *b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     float ph = 0;
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR, T = 0.22f;
@@ -448,6 +449,7 @@ static void InitSounds(void) {
 
     n = (int)(SR * 0.18f);                                // juicy splat
     b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR;
         float env = expf(-t * 26);
@@ -457,6 +459,7 @@ static void InitSounds(void) {
 
     n = (int)(SR * 0.8f);                                 // bomb explosion
     b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     float brown = 0;
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR;
@@ -468,6 +471,7 @@ static void InitSounds(void) {
 
     n = (int)(SR * 0.34f);                                // combo arpeggio
     b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     float notes[3] = { 523.25f, 659.25f, 783.99f };
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR;
@@ -480,6 +484,7 @@ static void InitSounds(void) {
 
     n = (int)(SR * 0.10f);                                // launch pop
     b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     ph = 0;
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR;
@@ -490,6 +495,7 @@ static void InitSounds(void) {
 
     n = (int)(SR * 0.15f);                                // life-lost thud
     b = malloc(n * sizeof(short));
+    if (!b) { gAudioOk = false; return; }
     for (int i = 0; i < n; i++) {
         float t = (float)i / SR;
         b[i] = Clip(sinf(2*PI*(120 - 60*t)*t) * expf(-t * 18) * 0.8f);
@@ -539,6 +545,7 @@ static void SpawnSplat(Vector2 pos, Color c) {
     }
 }
 static void LaunchOne(bool bomb) {
+    if (!(gLevel->vegMask & VEGBIT_ALL)) return;   // never spin on an empty set
     for (int i = 0; i < MAX_VEG; i++) if (!gVeg[i].active) {
         VegType t;
         do { t = (VegType)GetRandomValue(0, VEG_COUNT - 1); }
@@ -1116,6 +1123,8 @@ static void UpdateDrawFrame(void) {
     // ---- letterboxed presentation rect + virtual mouse
     float sw = (float)GetScreenWidth(), sh = (float)GetScreenHeight();
     float scale = fminf(sw / GAME_W, sh / GAME_H);
+    if (scale <= 0) scale = 1;   // zero-sized (minimized) window: keep the
+                                 // mouse mapping finite until it restores
     Rectangle dst = { (sw - GAME_W*scale)/2, (sh - GAME_H*scale)/2,
                       GAME_W*scale, GAME_H*scale };
     gMousePrev = gMouse;
@@ -1267,6 +1276,16 @@ static void UpdateDrawFrame(void) {
 // ===================================================================== main
 int main(int argc, char **argv) {
     gSelfTest = (argc > 1 && strcmp(argv[1], "--selftest") == 0);
+
+    {   // fail fast on a bad level row: a degenerate entry must never
+        // reach the spawn loop (it would hang or misbehave mid-run)
+        int bad = Levels_FirstInvalid();
+        if (bad >= 0) {
+            TraceLog(LOG_FATAL, "level table row %d (id %d) is invalid",
+                     bad, Levels_ByIndex(bad)->id);
+            return 1;   // TraceLog(LOG_FATAL) already exits; belt-and-braces
+        }
+    }
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(GAME_W, GAME_H, "Vegetable Ninja");

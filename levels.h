@@ -45,9 +45,14 @@ typedef struct {
     float star2, star3;   // thresholds (score points, or accuracy 0..1)
 } LevelDef;
 
+// Fixed capacity shared by consumers that size per-level arrays statically
+// (progress module); levels.c static-asserts the table fits.
+#define LEVELS_MAX_COUNT 64
+
 int             Levels_Count(void);
 const LevelDef *Levels_ByIndex(int index);       // NULL if out of range
 const LevelDef *Levels_ById(int id);             // NULL if unknown
 int             Levels_IndexOfId(int id);        // -1 if unknown
+int             Levels_FirstInvalid(void);       // -1 if every row is sane
 
 #endif // LEVELS_H

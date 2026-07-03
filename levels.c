@@ -39,7 +39,23 @@ static const LevelDef LEVELS[] = {
 
 #define LEVEL_COUNT ((int)(sizeof(LEVELS)/sizeof(LEVELS[0])))
 
+_Static_assert(LEVEL_COUNT <= LEVELS_MAX_COUNT,
+               "level table exceeds LEVELS_MAX_COUNT consumers size arrays by");
+
 int Levels_Count(void) { return LEVEL_COUNT; }
+
+// A degenerate row (empty vegetable set, non-positive timings, empty wave,
+// unordered star thresholds) must be caught at startup, before it can hang
+// or misbehave mid-run. See .docflow/adr/0101-data-driven-level-config-table.md (AC 5).
+int Levels_FirstInvalid(void) {
+    for (int i = 0; i < LEVEL_COUNT; i++) {
+        const LevelDef *l = &LEVELS[i];
+        if (!(l->vegMask & VEGBIT_ALL) || l->timeLimit <= 0 ||
+            l->spawnInterval <= 0 || l->maxWave < 1 || l->star2 > l->star3)
+            return i;
+    }
+    return -1;
+}
 
 const LevelDef *Levels_ByIndex(int index) {
     if (index < 0 || index >= LEVEL_COUNT) return NULL;

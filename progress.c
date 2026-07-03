@@ -1,7 +1,7 @@
 #include "progress.h"
 #include "levels.h"
 
-#define MAX_LEVELS 64
+#define MAX_LEVELS LEVELS_MAX_COUNT   // levels.c static-asserts the table fits
 
 static bool sUnlocked[MAX_LEVELS];
 static int  sBestStars[MAX_LEVELS];
