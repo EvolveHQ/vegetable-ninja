@@ -108,6 +108,7 @@ static bool  gPaused = false, gShowFps = false;
 static float gStateTime = 0;          // time since entering current state
 
 static Vector2 gMouse, gMousePrev;    // design-space blade position
+static float   gRealDt = 1.0f/60;     // unclamped frame time (blade speed gate)
 static bool    gBladeDown = false;
 static bool    gPointerPressed = false;  // press edge, this frame
 static bool    gSelfTest = false;  static int gSelfFrame = 0;
@@ -692,8 +693,12 @@ static void UpdatePlay(float dt) {
     }
 
     // ---- blade slicing
+    // The speed gate divides by REAL frame time, not the physics-clamped dt:
+    // across a frame hitch the clamped dt would inflate a slow movement's
+    // measured speed ~(real/clamped)x and slice the whole hitch-spanning
+    // segment (see .docflow/adr/0006-blade-cut-integrity.md, AC 4).
     Vector2 bladeVec = Vector2Subtract(gMouse, gMousePrev);
-    float bladeSpeed = Vector2Length(bladeVec) / fmaxf(dt, 1e-5f);
+    float bladeSpeed = Vector2Length(bladeVec) / fmaxf(gRealDt, 1e-5f);
     bool cutting = gBladeDown && bladeSpeed > SLICE_SPEED;
     Vector2 bladeDir = cutting ? Vector2Normalize(bladeVec) : (Vector2){ 1, 0 };
 
@@ -1104,7 +1109,8 @@ static void DrawFailed(void) {
 
 // =============================================================== frame loop
 static void UpdateDrawFrame(void) {
-    float dt = fminf(GetFrameTime(), 1.0f/20.0f);
+    gRealDt = GetFrameTime();
+    float dt = fminf(gRealDt, 1.0f/20.0f);   // clamped for physics stability
     gStateTime += dt;
 
     // ---- letterboxed presentation rect + virtual mouse
