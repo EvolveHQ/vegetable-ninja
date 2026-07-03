@@ -60,26 +60,31 @@
   };
 
   (function () {
+    // Pointer Events with capture: exactly one pointerId drives the blade.
+    // Other concurrent pointers (extra fingers, other buttons) are ignored,
+    // and capture delivers the release even outside the window — a second
+    // touch can never teleport the blade, and it can never get stuck held.
     var P = Module.pointer;
-    window.addEventListener('mousemove', function (e) {
-      P.x = e.clientX; P.y = e.clientY;
-    }, true);
-    window.addEventListener('mousedown', function (e) {
-      if (e.button === 0) { P.x = e.clientX; P.y = e.clientY; P.down = 1; }
-    }, true);
-    window.addEventListener('mouseup', function (e) {
-      if (e.button === 0) P.down = 0;
-    }, true);
-    window.addEventListener('blur', function () { P.down = 0; });
-    function touch(e, down) {
-      var t = e.changedTouches[0];
-      if (t) { P.x = t.clientX; P.y = t.clientY; }
-      if (down >= 0) P.down = down;
+    var canvas = document.getElementById('canvas');
+    var bladeId = null;
+    canvas.addEventListener('pointerdown', function (e) {
+      if (bladeId !== null) return;                    // one blade at a time
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      bladeId = e.pointerId;
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+      P.x = e.clientX; P.y = e.clientY; P.down = 1;
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (bladeId !== null && e.pointerId !== bladeId) return;
+      P.x = e.clientX; P.y = e.clientY;                // blade drag, or hover
+    });
+    function release(e) {
+      if (e.pointerId !== bladeId) return;
+      bladeId = null; P.down = 0;
     }
-    window.addEventListener('touchstart', function (e) { touch(e, 1); }, { passive: true });
-    window.addEventListener('touchmove',  function (e) { touch(e, -1); }, { passive: true });
-    window.addEventListener('touchend',   function (e) { touch(e, 0); }, { passive: true });
-    window.addEventListener('touchcancel',function (e) { touch(e, 0); }, { passive: true });
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    window.addEventListener('blur', function () { bladeId = null; P.down = 0; });
   })();
 
   (function () {
